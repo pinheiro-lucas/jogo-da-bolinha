@@ -4,10 +4,11 @@ import random, math, time
 # Variáveis globais
 resolucao = 500
 fundo = color_rgb(33, 33, 33)
+dificuldade = 2
 
 # Cria o Menu Principal
 menu = GraphWin('Menu do Jogo', resolucao, resolucao)
-menu.setBackground(color_rgb(33, 33, 33))
+menu.setBackground(fundo)
 
 # Função de animação (futura)
 def animacao(self, x, y):
@@ -33,6 +34,7 @@ def texto(self, ret, fundo, msg):
     self = Text(ret.getCenter(), msg)
     self.setStyle('bold')
     self.setTextColor(fundo)
+    self.setFace('times roman')
     self.draw(menu)
     return self
 
@@ -57,25 +59,27 @@ def Limpar(lista):
         a.undraw()
 
 # Menu de Resolução
-def MenuResolucao(fundo):
-    global resolucao, menu
+def MenuResolucao():
+    global resolucao, menu, fundo
     selecionou, selecionado = False, 1
 
-    op1, op2, op3, op4, op5 = None, None, None, None, None
+    op1, op2, op3, op4, op5, op6 = None, None, None, None, None, None
     op1 = retangulo(op1, resolucao * 0.05, resolucao * 0.15, resolucao * 0.95, resolucao * 0.05)
     op2 = retangulo(op2, resolucao * 0.05, resolucao * 0.30, resolucao * 0.95, resolucao * 0.20)
     op3 = retangulo(op3, resolucao * 0.05, resolucao * 0.45, resolucao * 0.95, resolucao * 0.35)
     op4 = retangulo(op4, resolucao * 0.05, resolucao * 0.60, resolucao * 0.95, resolucao * 0.50)
     op5 = retangulo(op5, resolucao * 0.05, resolucao * 0.75, resolucao * 0.95, resolucao * 0.65)
+    op6 = retangulo(op6, resolucao * 0.05, resolucao * 0.90, resolucao * 0.95, resolucao * 0.80)
 
-    texto1, texto2, texto3, texto4, texto5 = None, None, None, None, None
-    texto1 = texto(texto1, op1, fundo, '250x250 (RECOMENDADO PARA <HD)')
-    texto2 = texto(texto2, op2, fundo, '500x500 (RECOMENDADO PARA HD)')
-    texto3 = texto(texto3, op3, fundo, '750x750 (RECOMENDADO PARA FULL-HD)')
-    texto4 = texto(texto4, op4, fundo, '1000x1000 (RECOMENDADO PARA 4K)')
-    texto5 = texto(texto5, op5, fundo, '1500x1500 (RECOMENDADO PARA 8K)')
+    texto1, texto2, texto3, texto4, texto5, texto6 = None, None, None, None, None, None
+    texto1 = texto(texto1, op1, fundo, '250x250')
+    texto2 = texto(texto2, op2, fundo, '500x500')
+    texto3 = texto(texto3, op3, fundo, '750x750')
+    texto4 = texto(texto4, op4, fundo, '1000x1000')
+    texto5 = texto(texto5, op5, fundo, '1500x1500')
+    texto6 = texto(texto6, op6, fundo, '< Voltar')
 
-    lista = [op1, op2, op3, op4, op5, texto1, texto2, texto3, texto4, texto5]
+    lista = [op1, op2, op3, op4, op5, op6, texto1, texto2, texto3, texto4, texto5, texto6]
 
     while not selecionou:
         teclas = menu.checkKey()
@@ -86,39 +90,77 @@ def MenuResolucao(fundo):
                 selecionado -= 1
         # Setinha p/ baixo
         elif teclas == 'Down':
-            if selecionado != 5:
+            if selecionado != 6:
                 selecionado += 1
         # Enter
         elif teclas == 'Return':
+            if selecionado != 6:
+                opcoes = [250, 500, 750, 1000, 1500]
+                resolucao = opcoes[selecionado-1]
+                MudarResolucao()
             Limpar(lista)
-            if selecionado == 1:
-                resolucao = 250
-                MudarResolucao()
-                return True
-            elif selecionado == 2:
-                resolucao = 500
-                MudarResolucao()
-                return True
-            elif selecionado == 3:
-                resolucao = 750
-                MudarResolucao()
-                return True
-            elif selecionado == 4:
-                resolucao = 1000
-                MudarResolucao()
-                return True
-            elif selecionado == 5:
-                resolucao = 1500
-                MudarResolucao()
-                return True
+            return True
         # ESC
         elif teclas in ['Escape', 'BackSpace']:
             Limpar(lista)
             Menu()
 
         # Função para checagem do selecionado
-        listaop = [op1, op2, op3, op4, op5]
+        listaop = [op1, op2, op3, op4, op5, op6]
         reset_outline(listaop, selecionado, fundo)
+
+def MenuDificuldade():
+    global fundo, resolucao, dificuldade
+    selecionou, selecionado = False, 1
+
+    op1, op2, op3, op4 = None, None, None, None
+    op1 = retangulo(op1, resolucao * 0.05, resolucao * 0.30, resolucao * 0.95, resolucao * 0.20)
+    op2 = retangulo(op2, resolucao * 0.05, resolucao * 0.45, resolucao * 0.95, resolucao * 0.35)
+    op3 = retangulo(op3, resolucao * 0.05, resolucao * 0.60, resolucao * 0.95, resolucao * 0.50)
+    op4 = retangulo(op4, resolucao * 0.05, resolucao * 0.75, resolucao * 0.95, resolucao * 0.65)
+
+    texto1, texto2, texto3, texto4, texto5 = None, None, None, None, None
+    texto1 = texto(texto1, op1, fundo, 'FÁCIL')
+    texto2 = texto(texto2, op2, fundo, 'NORMAL')
+    texto3 = texto(texto3, op3, fundo, 'DIFÍCIL')
+    texto5 = texto(texto4, op4, fundo, '< Voltar')
+
+    dificuldades = ('FÁCIL', 'NORMAL', 'DIFÍCIL')
+    texto4 = Text(Point(resolucao * 0.5, resolucao * 0.1), f'DIFICULDADE ATUAL: {dificuldades[dificuldade-1]}')
+    texto4.setStyle('bold')
+    texto4.setTextColor('white')
+    texto4.draw(menu)
+
+
+    lista = (op1, op2, op3, op4, texto1, texto2, texto3, texto4, texto5)
+
+    while not selecionou:
+        teclas = menu.checkKey()
+
+        # Setinha p/ cima
+        if teclas == 'Up':
+            if selecionado != 1:
+                selecionado -= 1
+        # Setinha p/ baixo
+        elif teclas == 'Down':
+            if selecionado != 4:
+                selecionado += 1
+        # Enter
+        elif teclas == 'Return':
+            if selecionado != 4:
+                opcoes = [1, 2, 3]
+                dificuldade = opcoes[selecionado - 1]
+            Limpar(lista)
+            return True
+        # ESC
+        elif teclas in ['Escape', 'BackSpace']:
+            Limpar(lista)
+            Menu()
+
+        # Função para checagem do selecionado
+        listaop = [op1, op2, op3, op4]
+        reset_outline(listaop, selecionado, fundo)
+
 
 # Menu Principal
 def Menu():
@@ -131,8 +173,8 @@ def Menu():
     op2 = retangulo(op2, resolucao * 0.05, resolucao * 0.30, resolucao * 0.95, resolucao * 0.20)
 
     # Função texto em prática
-    texto1 = texto(texto1, op1, fundo, 'PRIMEIRA OPÇÃO')
-    texto2 = texto(texto2, op2, fundo, 'SEGUNDA OPÇÃO')
+    texto1 = texto(texto1, op1, fundo, 'RESOLUÇÃO')
+    texto2 = texto(texto2, op2, fundo, 'DIFICULDADE')
 
     while not selecionou:
 
@@ -151,12 +193,12 @@ def Menu():
             lista = [op1, op2, texto1, texto2]
             Limpar(lista)
             if selecionado == 1:
-                selecionouOpcao = MenuResolucao(fundo)
+                selecionouOpcao = MenuResolucao()
             if selecionado == 2:
-                Limpar(lista)
+                selecionouOpcao = MenuDificuldade()
         # ESC
         elif teclas in ['Escape', 'BackSpace']:
-            menu.close()
+            exit()
 
         # Função para checagem do selecionado
         if selecionouOpcao:
