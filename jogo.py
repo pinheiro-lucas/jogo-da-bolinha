@@ -49,28 +49,33 @@ def texto_ret(ret, msg):
     self.setTextColor(fundo)
     self.setStyle('bold')
     self.setFace('times roman')
-    temp = {250: 10, 500: 15, 750: 20, 1000: 25, 1500: 30}
-    self.setSize(temp[resolucao])
+    tamanho_normal = {250: 10, 500: 15, 750: 20, 1000: 25, 1500: 30}
+    self.setSize(tamanho_normal[resolucao])
     self.draw(jogo)
     return self
 
 # Função de Texto sem Retângulo
-def texto_sem_ret(x, y, msg):
+def texto_sem_ret(x, y, t, msg):
     global botoes, resolucao, jogo
     self = Text(Point(resolucao*(x/100), resolucao * (y/100)), msg)
     self.setStyle('bold')
     self.setTextColor(botoes)
     self.setFace('times roman')
-    temp = {250: 15, 500: 20, 750: 25, 1000: 30, 1500: 35}
-    self.setSize(temp[resolucao])
+    if t:
+        tamanho_maior = {250: 15, 500: 20, 750: 25, 1000: 30, 1500: 35}
+        self.setSize(tamanho_maior[resolucao])
+        self.draw(jogo)
+        return self
+    tamanho_normal = {250: 10, 500: 15, 750: 20, 1000: 25, 1500: 30}
+    self.setSize(tamanho_normal[resolucao])
     self.draw(jogo)
     return self
 
 # Função da Bolinha
 def bola(x, y):
     global jogo, resolucao
-    temp = {250: 5, 500: 10, 750: 15, 1000: 20, 1500: 25}
-    self = Circle(Point(resolucao*(x/100), resolucao * (y/100)), temp[resolucao])
+    raio = {250: 5, 500: 10, 750: 15, 1000: 20, 1500: 25}
+    self = Circle(Point(resolucao*(x/100), resolucao * (y/100)), raio[resolucao])
     self.setFill('red')
     self.setOutline('red')
     self.draw(jogo)
@@ -153,7 +158,7 @@ def menu_dificuldade():
     texto5 = texto_ret(op4, '< Voltar')
 
     dificuldades = ('FÁCIL', 'NORMAL', 'DIFÍCIL')
-    texto4 = texto_sem_ret(50, 10, f'DIFICULDADE ATUAL: {dificuldades[dificuldade - 1]}')
+    texto4 = texto_sem_ret(50, 10, True, f'DIFICULDADE ATUAL: {dificuldades[dificuldade - 1]}')
 
     lista = (op1, op2, op3, op4, texto1, texto2, texto3, texto4, texto5)
 
@@ -192,13 +197,13 @@ def menu_comojogar():
 
     texto1 = texto_ret(op1, '< Voltar')
 
-    texto2 = texto_sem_ret(50, 10, 'COMO JOGAR:')
-    texto3 = texto_sem_ret(50, 20, 'Você tem três vidas')
-    texto4 = texto_sem_ret(50, 25, 'Não deixe a bolinha cair')
-    texto5 = texto_sem_ret(50, 30, 'A velocidade aumenta conforme o tempo')
-    texto6 = texto_sem_ret(50, 35, 'Utilize as setinhas para controlar a barra')
-    texto7 = texto_sem_ret(50, 40, 'Recupere a vida coletando os corações')
-    texto8 = texto_sem_ret(50, 45, 'Aproveite os modos mais desafiadores')
+    texto2 = texto_sem_ret(50, 10, True, 'COMO JOGAR:')
+    texto3 = texto_sem_ret(50, 20, False, 'Você tem três vidas')
+    texto4 = texto_sem_ret(50, 25, False, 'Não deixe a bolinha cair')
+    texto5 = texto_sem_ret(50, 30, False, 'A velocidade aumenta conforme o tempo')
+    texto6 = texto_sem_ret(50, 35, False, 'Utilize as setinhas para controlar a barra')
+    texto7 = texto_sem_ret(50, 40, False, 'Recupere a vida coletando os corações')
+    texto8 = texto_sem_ret(50, 45, False, 'Aproveite os modos mais desafiadores')
 
     lista = (op1, texto1, texto2, texto3, texto4, texto5, texto6, texto7, texto8)
 
@@ -226,12 +231,12 @@ def menu_creditos():
 
     texto1 = texto_ret(op1, '< Voltar')
 
-    texto2 = texto_sem_ret(50, 10, 'CRÉDITOS:')
-    texto3 = texto_sem_ret(50, 20, 'Lucas Pinheiro')
-    texto4 = texto_sem_ret(50, 25, 'Thiago Rabelo')
-    texto5 = texto_sem_ret(50, 30, 'Giulia Yule')
-    texto6 = texto_sem_ret(50, 35, 'Maria Antônia')
-    texto7 = texto_sem_ret(50, 40, 'Luiz Falcão')
+    texto2 = texto_sem_ret(50, 10, True, 'CRÉDITOS:')
+    texto3 = texto_sem_ret(50, 20, False, 'Lucas Pinheiro')
+    texto4 = texto_sem_ret(50, 25, False, 'Thiago Rabelo')
+    texto5 = texto_sem_ret(50, 30, False, 'Giulia Yule')
+    texto6 = texto_sem_ret(50, 35, False, 'Maria Antônia')
+    texto7 = texto_sem_ret(50, 40, False, 'Luiz Falcão')
 
     lista = (op1, texto1, texto2, texto3, texto4, texto5, texto6, texto7)
 
@@ -259,8 +264,8 @@ def jogo_principal():
 
     iniciar, bateuu, bateu_barra, bateu_esq, bateu_dir, bateu_cima = False, False, False, False, False, False
 
-    texto0 = texto_sem_ret(50, 50, 'PARA INICIAR O JOGO')
-    texto1 = texto_sem_ret(50, 60, 'APERTE ENTER')
+    texto0 = texto_sem_ret(50, 50, True, 'PARA INICIAR O JOGO')
+    texto1 = texto_sem_ret(50, 60, True, 'APERTE ENTER')
 
     while not iniciar:
 
@@ -268,8 +273,8 @@ def jogo_principal():
 
 #       Iniciar quando clicar Enter
         if teclas == 'Return':
-            temp = [texto0, texto1]
-            limpar(temp)
+            texto = [texto0, texto1]
+            limpar(texto)
             iniciar = True
         elif teclas in ['Escape', 'BackSpace']:
             acabou = True
@@ -323,26 +328,27 @@ def margem():
 
 def bateu(ball, x, y):
     global acabou
-    temp = {250: 5, 500: 10, 750: 15, 1000: 20, 1500: 25}
-    if ball.getCenter().getX() <= temp[resolucao]+5 and ball.getCenter().getY() <= temp[resolucao]+5:
+    raio = {250: 5, 500: 10, 750: 15, 1000: 20, 1500: 25}
+    if ball.getCenter().getX() <= raio[resolucao]+5 and ball.getCenter().getY() <= raio[resolucao]+5:
         x, y = 1, 1
         return x, y
-    elif ball.getCenter().getX() >= resolucao-temp[resolucao]-6 \
-            and ball.getCenter().getY() >= resolucao-temp[resolucao]-6:
+    elif ball.getCenter().getX() >= resolucao-raio[resolucao]-6 \
+            and ball.getCenter().getY() >= resolucao-raio[resolucao]-6:
         acabou = True
         return x, y
-    elif ball.getCenter().getX() <= temp[resolucao]+5:
+    elif ball.getCenter().getX() <= raio[resolucao]+5:
         x = 1
         return x, y
-    elif ball.getCenter().getY() <= temp[resolucao]+5:
+    elif ball.getCenter().getY() <= raio[resolucao]+5:
         y = 1
         return x, y
-    elif ball.getCenter().getX() >= resolucao-temp[resolucao]-6:
+    elif ball.getCenter().getX() >= resolucao-raio[resolucao]-6:
         x = -1
         return x, y
-    elif ball.getCenter().getY() >= resolucao-temp[resolucao]-6:
+    elif ball.getCenter().getY() >= resolucao-raio[resolucao]-6:
         acabou = True
         return x, y
+
     return x, y
 
 # Menu Principal
@@ -358,7 +364,7 @@ def menu_principal():
     op5 = retangulo(5, 95, 95, 85)
 
 #   Função texto em prática
-    texto0 = texto_sem_ret(50, 10, 'MENU PRINCIPAL')
+    texto0 = texto_sem_ret(50, 10, True, 'MENU PRINCIPAL')
     texto5 = texto_ret(op1, 'JOGAR')
     texto1 = texto_ret(op2, 'RESOLUÇÃO')
     texto2 = texto_ret(op3, 'DIFICULDADE')
