@@ -7,6 +7,8 @@ fundo = color_rgb(33, 33, 33)
 botoes = color_rgb(255, 248, 171)
 dificuldade = 2
 acabou = False
+pontos = 0
+placar = None
 
 # Cria o Menu Principal
 jogo = GraphWin('Menu do Jogo', resolucao, resolucao, autoflush=False)
@@ -73,11 +75,11 @@ def texto_sem_ret(x, y, t, msg):
 
 # Função da Bolinha
 def bola(x, y):
-    global jogo, resolucao
+    global jogo, resolucao, botoes
     raio = {250: 5, 500: 10, 750: 15, 1000: 20, 1500: 25}
     self = Circle(Point(resolucao*(x/100), resolucao * (y/100)), raio[resolucao])
-    self.setFill('red')
-    self.setOutline('red')
+    self.setFill(botoes)
+#   self.setOutline('white')
     self.draw(jogo)
     return self
 
@@ -257,27 +259,17 @@ def menu_creditos():
         resetar_outline(listaop, selecionado)
 
 def jogo_principal():
-    global resolucao, fundo, jogo, acabou
+    global resolucao, fundo, jogo, acabou, pontos, placar
 
     jogo = GraphWin('Jogo da Bolinha', resolucao, resolucao, autoflush=False)
     jogo.setBackground(fundo)
 
-    iniciar, bateuu, bateu_barra, bateu_esq, bateu_dir, bateu_cima = False, False, False, False, False, False
+    iniciar, bateuu, bateu_barra, bateu_esq, bateu_dir, bateu_cima, acabou = \
+        False, False, False, False, False, False, False
+    pontos = 0
 
-    texto0 = texto_sem_ret(50, 50, True, 'PARA INICIAR O JOGO')
-    texto1 = texto_sem_ret(50, 60, True, 'APERTE ENTER')
-
-    while not iniciar:
-
-        teclas = jogo.checkKey()
-
-#       Iniciar quando clicar Enter
-        if teclas == 'Return':
-            texto = [texto0, texto1]
-            limpar(texto)
-            iniciar = True
-        elif teclas in ['Escape', 'BackSpace']:
-            acabou = True
+    texto0 = texto_sem_ret(50, 40, True, 'PARA INICIAR O JOGO')
+    texto1 = texto_sem_ret(50, 30, True, 'APERTE ENTER')
 
 #   Para X:
 #   1 = Direita
@@ -287,7 +279,7 @@ def jogo_principal():
 #   1 = Baixo
 #  -1 = Cima
     x, y = 1, -1
-    bolinha = bola(50, 50)
+    bolinha = bola(50, 70)
     margem()
     # Bateu = 40 < x < 60
     if dificuldade == 1:
@@ -297,59 +289,97 @@ def jogo_principal():
     else:
         barra = retangulo(40, 75, 60, 78)
     barra.setWidth(2)
-    barra.setOutline('red')
+    barra.setOutline(botoes)
+    placar = atualizar_placar()
 
-    while not acabou:
+    while not iniciar:
+
         teclas = jogo.checkKey()
 
-        if teclas == 'Right' and barra.getP2().getX() < resolucao-11:
-            barra.move(5, 0)
-        elif teclas == 'Left' and barra.getP1().getX() > 11:
-            barra.move(-5, 0)
+        #       Iniciar quando clicar Enter
+        if teclas == 'Return':
+            texto = [texto0, texto1]
+            limpar(texto)
+            iniciar = True
+        elif teclas in ['Escape', 'BackSpace']:
+            iniciar, acabou = True, True
+
+    while not acabou:
+
+        teclas = jogo.checkKey()
+
+        if teclas == 'Right' and barra.getP2().getX() <= resolucao-11:
+            if x > 0:
+                barra.move(5 + x * dificuldade, 0)
+            else:
+                barra.move(-(-5 + x * dificuldade), 0)
+        elif teclas == 'Left' and barra.getP1().getX() >= 10:
+            if x > 0:
+                barra.move(-(5 + x * dificuldade), 0)
+            else:
+                barra.move((-5 + x * dificuldade), 0)
         elif teclas in ['Escape', 'BackSpace']:
             acabou = True
 
-        x, y = bateu(bolinha, x, y)
+        x, y = bateu(bolinha, x, y, barra)
         bolinha.move(resolucao*(x/1000*dificuldade), resolucao*(y/1000*dificuldade))
         update(60)
-    exit()
+    jogo.close()
+    jogo = GraphWin('Menu do Jogo', resolucao, resolucao, autoflush=False)
+    jogo.setBackground(fundo)
+    menu_principal()
 
 
 def margem():
-    global resolucao, fundo
+    global resolucao, fundo, botoes
     self = Rectangle(Point(1, 1), Point(resolucao-1, resolucao-1))
-    self.setOutline('red')
+    self.setOutline(botoes)
     self.setWidth(10)
     self.draw(jogo)
-    self = Line(Point(0, resolucao-1), Point(resolucao, resolucao-1))
-    self.setOutline(fundo)
-    self.setWidth(10)
-    self.draw(jogo)
+    self2 = Line(Point(0, resolucao-1), Point(resolucao, resolucao-1))
+    self2.setOutline(fundo)
+    self2.setWidth(10)
+    self2.draw(jogo)
 
-def bateu(ball, x, y):
-    global acabou
+def bateu(ball, x, y, barra):
+    global acabou, dificuldade, pontos, placar
     raio = {250: 5, 500: 10, 750: 15, 1000: 20, 1500: 25}
-    if ball.getCenter().getX() <= raio[resolucao]+5 and ball.getCenter().getY() <= raio[resolucao]+5:
-        x, y = 1, 1
-        return x, y
+    if ball.getCenter().getX() <= raio[resolucao]+5 and \
+            ball.getCenter().getY() <= raio[resolucao]+5:
+        x, y = -x, -y
     elif ball.getCenter().getX() >= resolucao-raio[resolucao]-6 \
             and ball.getCenter().getY() >= resolucao-raio[resolucao]-6:
         acabou = True
-        return x, y
     elif ball.getCenter().getX() <= raio[resolucao]+5:
-        x = 1
-        return x, y
+        x = -x
     elif ball.getCenter().getY() <= raio[resolucao]+5:
-        y = 1
-        return x, y
+        y = -y
     elif ball.getCenter().getX() >= resolucao-raio[resolucao]-6:
-        x = -1
-        return x, y
+        x = -x
     elif ball.getCenter().getY() >= resolucao-raio[resolucao]-6:
         acabou = True
-        return x, y
+    elif barra.getP1().getX() <= ball.getCenter().getX() <= barra.getP2().getX() and \
+            barra.getP1().getY() <= ball.getCenter().getY()+6 <= barra.getP2().getY():
+        if x > 0:
+            x += dificuldade * 0.1
+        else:
+            x -= dificuldade * 0.1
+        if y > 0:
+            y += dificuldade * 0.1
+        else:
+            y -= dificuldade * 0.1
+        y = -y
+        pontos += 1
+        atualizar_placar()
 
     return x, y
+
+def atualizar_placar():
+    global pontos, placar
+    if pontos > 0:
+        placar.undraw()
+    placar = texto_sem_ret(50, 90, True, f'PONTUAÇÃO ATUAL: {pontos}')
+    return placar
 
 # Menu Principal
 def menu_principal():
