@@ -1,4 +1,5 @@
 from graphics import *
+from random import randrange
 import time
 
 # Variáveis globais
@@ -264,8 +265,7 @@ def jogo_principal():
     jogo = GraphWin('Jogo da Bolinha', resolucao, resolucao, autoflush=False)
     jogo.setBackground(fundo)
 
-    iniciar, bateuu, bateu_barra, bateu_esq, bateu_dir, bateu_cima, acabou = \
-        False, False, False, False, False, False, False
+    iniciar, acabou = False, False
     pontos = 0
 
     texto0 = texto_sem_ret(50, 40, True, 'PARA INICIAR O JOGO')
@@ -279,9 +279,8 @@ def jogo_principal():
 #   1 = Baixo
 #  -1 = Cima
     x, y = 1, -1
-    bolinha = bola(50, 70)
+    raio = {250: 5, 500: 10, 750: 15, 1000: 20, 1500: 25}
     margem()
-    # Bateu = 40 < x < 60
     if dificuldade == 1:
         barra = retangulo(30, 75, 70, 78)
     elif dificuldade == 3:
@@ -290,6 +289,9 @@ def jogo_principal():
         barra = retangulo(40, 75, 60, 78)
     barra.setWidth(2)
     barra.setOutline(botoes)
+    # arrumar isso
+    bolinha = bola(randrange(45, 56), randrange(60, 70)) 
+    
     placar = atualizar_placar()
 
     while not iniciar:
@@ -344,34 +346,41 @@ def margem():
 def bateu(ball, x, y, barra):
     global acabou, dificuldade, pontos, placar
     raio = {250: 5, 500: 10, 750: 15, 1000: 20, 1500: 25}
-    if ball.getCenter().getX() <= raio[resolucao]+5 and \
-            ball.getCenter().getY() <= raio[resolucao]+5:
+    bx = ball.getCenter().getX()
+    by = ball.getCenter().getY()
+    limite_inferior = resolucao-raio[resolucao]-5
+    limite_superior = raio[resolucao]+5
+    if by > limite_inferior:
+        acabou = True
+    elif bx < limite_superior and \
+    by < limite_superior:
         x, y = -x, -y
-    elif ball.getCenter().getX() >= resolucao-raio[resolucao]-6 \
-            and ball.getCenter().getY() >= resolucao-raio[resolucao]-6:
-        acabou = True
-    elif ball.getCenter().getX() <= raio[resolucao]+5:
+    elif bx > limite_inferior and \
+    by < limite_superior:
+        x, y = -x, -y
+    elif bx < limite_superior:
         x = -x
-    elif ball.getCenter().getY() <= raio[resolucao]+5:
+    elif by < limite_superior:
         y = -y
-    elif ball.getCenter().getX() >= resolucao-raio[resolucao]-6:
+    elif bx > limite_inferior:
         x = -x
-    elif ball.getCenter().getY() >= resolucao-raio[resolucao]-6:
-        acabou = True
-    elif barra.getP1().getX() <= ball.getCenter().getX() <= barra.getP2().getX() and \
-            barra.getP1().getY() <= ball.getCenter().getY()+6 <= barra.getP2().getY():
-        if x > 0:
-            x += dificuldade * 0.1
+    elif barra.getP1().getX() <= bx <= barra.getP2().getX() and \
+    barra.getP1().getY() <= by+raio[resolucao] <= barra.getP2().getY():
+        if barra.getP1().getY() == by+raio[resolucao]:
+            if x > 0:
+                x += dificuldade * 0.1
+            else:
+                x -= dificuldade * 0.1
+            if y > 0:
+                y += dificuldade * 0.1
+            else:
+                y -= dificuldade * 0.1
+            y = -y
+            pontos += 1
+            atualizar_placar()
         else:
-            x -= dificuldade * 0.1
-        if y > 0:
-            y += dificuldade * 0.1
-        else:
-            y -= dificuldade * 0.1
-        y = -y
-        pontos += 1
-        atualizar_placar()
-
+            x = -x
+            
     return x, y
 
 def atualizar_placar():
