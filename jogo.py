@@ -1,4 +1,5 @@
 from graphics import *
+from graphics_extra import *
 from random import randrange
 import time
 
@@ -10,9 +11,10 @@ dificuldade = 2
 acabou = False
 pontos = 0
 placar = None
+temp = True
 
 # Cria o Menu Principal
-jogo = GraphWin('Menu do Jogo', resolucao, resolucao, autoflush=False)
+jogo = GraphWin('Jogo da Bolinha', resolucao, resolucao, autoflush=False)
 jogo.setBackground(fundo)
 
 # Função de animação (futura)
@@ -81,6 +83,17 @@ def bola(x, y):
     self = Circle(Point(resolucao*(x/100), resolucao * (y/100)), raio[resolucao])
     self.setFill(botoes)
 #   self.setOutline('white')
+    self.draw(jogo)
+    return self
+
+# Função de Criar a Barrinha
+def criar_barra(x1, y1, x2, y2):
+    global botoes, resolucao, jogo
+    self = Rectangle(Point(resolucao * (x1 / 100), resolucao * (y1 / 100)),
+                     Point(resolucao * (x2 / 100), resolucao * (y2 / 100)))
+    self.setFill(botoes)
+    self.setWidth(2)
+    self.setOutline(botoes)
     self.draw(jogo)
     return self
 
@@ -260,10 +273,9 @@ def menu_creditos():
         resetar_outline(listaop, selecionado)
 
 def jogo_principal():
-    global resolucao, fundo, jogo, acabou, pontos, placar
+    global resolucao, fundo, jogo, acabou, pontos, placar, temp
 
-    jogo = GraphWin('Jogo da Bolinha', resolucao, resolucao, autoflush=False)
-    jogo.setBackground(fundo)
+    jogo.autoflush = True
 
     iniciar, acabou = False, False
     pontos = 0
@@ -278,20 +290,19 @@ def jogo_principal():
 #   Para Y:
 #   1 = Baixo
 #  -1 = Cima
-    x, y = 1, -1
-    raio = {250: 5, 500: 10, 750: 15, 1000: 20, 1500: 25}
-    margem()
+
+    x, y = -1, -1
+    bolinha = bola(randrange(45, 56), 70)
+    self, self2 = margem()
+    temp = True
+
     if dificuldade == 1:
-        barra = retangulo(30, 75, 70, 78)
+        barra = criar_barra(30, 75, 70, 77)
     elif dificuldade == 3:
-        barra = retangulo(45, 75, 55, 78)
+        barra = criar_barra(45, 75, 55, 77)
     else:
-        barra = retangulo(40, 75, 60, 78)
-    barra.setWidth(2)
-    barra.setOutline(botoes)
-    # arrumar isso
-    bolinha = bola(randrange(45, 56), randrange(60, 70)) 
-    
+        barra = criar_barra(40, 75, 60, 77)
+
     placar = atualizar_placar()
 
     while not iniciar:
@@ -326,11 +337,9 @@ def jogo_principal():
         x, y = bateu(bolinha, x, y, barra)
         bolinha.move(resolucao*(x/1000*dificuldade), resolucao*(y/1000*dificuldade))
         update(60)
-    jogo.close()
-    jogo = GraphWin('Menu do Jogo', resolucao, resolucao, autoflush=False)
-    jogo.setBackground(fundo)
+    lista = (texto0, texto1, bolinha, placar, self, self2, barra)
+    limpar(lista)
     menu_principal()
-
 
 def margem():
     global resolucao, fundo, botoes
@@ -342,31 +351,31 @@ def margem():
     self2.setOutline(fundo)
     self2.setWidth(10)
     self2.draw(jogo)
+    return self, self2
 
 def bateu(ball, x, y, barra):
-    global acabou, dificuldade, pontos, placar
+    global acabou, dificuldade, pontos, placar, temp
     raio = {250: 5, 500: 10, 750: 15, 1000: 20, 1500: 25}
-    bx = ball.getCenter().getX()
-    by = ball.getCenter().getY()
-    limite_inferior = resolucao-raio[resolucao]-5
-    limite_superior = raio[resolucao]+5
-    if by > limite_inferior:
+
+    if ball.getCenter().getX() <= raio[resolucao]+5 and \
+            ball.getCenter().getY() <= raio[resolucao]+5:
+        x, y = -x, -y
+    elif ball.getCenter().getX() >= resolucao-raio[resolucao]-6 \
+            and ball.getCenter().getY() >= resolucao-raio[resolucao]-6:
         acabou = True
-    elif bx < limite_superior and \
-    by < limite_superior:
-        x, y = -x, -y
-    elif bx > limite_inferior and \
-    by < limite_superior:
-        x, y = -x, -y
-    elif bx < limite_superior:
+    elif ball.getCenter().getX() < raio[resolucao]+5:
         x = -x
-    elif by < limite_superior:
+    elif ball.getCenter().getY() < raio[resolucao]+5:
         y = -y
-    elif bx > limite_inferior:
+    elif ball.getCenter().getX() > resolucao-raio[resolucao]-6:
         x = -x
-    elif barra.getP1().getX() <= bx <= barra.getP2().getX() and \
-    barra.getP1().getY() <= by+raio[resolucao] <= barra.getP2().getY():
-        if barra.getP1().getY() == by+raio[resolucao]:
+    elif ball.getCenter().getY() > resolucao-raio[resolucao]-6:
+        acabou = True
+    elif barra.getP1().getX() <= ball.getCenter().getX() + raio[resolucao] and \
+            ball.getCenter().getX() - raio[resolucao] <= barra.getP2().getX() and \
+            barra.getP1().getY() <= ball.getCenter().getY() + raio[resolucao] and \
+            ball.getCenter().getY() - raio[resolucao] <= barra.getP2().getY():
+        if barra.getP1().getY() == ball.getCenter().getY() + raio[resolucao] and temp:
             if x > 0:
                 x += dificuldade * 0.1
             else:
@@ -378,9 +387,12 @@ def bateu(ball, x, y, barra):
             y = -y
             pontos += 1
             atualizar_placar()
-        else:
-            x = -x
-            
+        elif temp:
+            temp = False
+            if barra.getP2().getX() == ball.getCenter().getX() - raio[resolucao] and x > 0 or \
+                    barra.getP1().getX() == ball.getCenter().getX() + raio[resolucao] and x < 0:
+                x = -x
+
     return x, y
 
 def atualizar_placar():
@@ -395,6 +407,7 @@ def menu_principal():
     global fundo, resolucao, jogo
     selecionado = 1
     selecionou, selecionou_opcao = False, False
+    jogo.autoflush = False
 
     op1 = retangulo(5, 35, 95, 20)
     op2 = retangulo(5, 50, 95, 40)
@@ -427,7 +440,6 @@ def menu_principal():
             lista = [op1, op2, op3, op4, op5, texto0, texto1, texto2, texto3, texto4, texto5]
             limpar(lista)
             if selecionado == 1:
-                jogo.close()
                 selecionou = True
                 jogo_principal()
             elif selecionado == 2:
