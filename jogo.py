@@ -1,5 +1,4 @@
 from graphics import *
-from graphics_extra import *
 from random import randrange
 import time
 
@@ -11,7 +10,7 @@ dificuldade = 2
 acabou = False
 pontos = 0
 placar = None
-temp = True
+lateral = True
 
 # Cria o Menu Principal
 jogo = GraphWin('Jogo da Bolinha', resolucao, resolucao, autoflush=False)
@@ -273,7 +272,7 @@ def menu_creditos():
         resetar_outline(listaop, selecionado)
 
 def jogo_principal():
-    global resolucao, fundo, jogo, acabou, pontos, placar, temp
+    global resolucao, fundo, jogo, acabou, pontos, placar, lateral
 
     jogo.autoflush = True
 
@@ -291,10 +290,10 @@ def jogo_principal():
 #   1 = Baixo
 #  -1 = Cima
 
-    x, y = -1, -1
-    bolinha = bola(randrange(45, 56), 70)
+    x, y = randrange(-1, 2, 2), -1
+    bolinha = bola(randrange(45, 56), 72)
     self, self2 = margem()
-    temp = True
+    lateral = True
 
     if dificuldade == 1:
         barra = criar_barra(30, 75, 70, 77)
@@ -336,6 +335,7 @@ def jogo_principal():
 
         x, y = bateu(bolinha, x, y, barra)
         bolinha.move(resolucao*(x/1000*dificuldade), resolucao*(y/1000*dificuldade))
+        print(resolucao*(x/1000*dificuldade), resolucao*(y/1000*dificuldade))
         update(60)
     lista = (texto0, texto1, bolinha, placar, self, self2, barra)
     limpar(lista)
@@ -353,45 +353,51 @@ def margem():
     self2.draw(jogo)
     return self, self2
 
+
 def bateu(ball, x, y, barra):
-    global acabou, dificuldade, pontos, placar, temp
+    global acabou, dificuldade, pontos, placar, lateral
     raio = {250: 5, 500: 10, 750: 15, 1000: 20, 1500: 25}
 
-    if ball.getCenter().getX() <= raio[resolucao]+5 and \
-            ball.getCenter().getY() <= raio[resolucao]+5:
+    bx = ball.getCenter().getX()
+    by = ball.getCenter().getY()
+    p1x = barra.getP1().getX()
+    p1y = barra.getP1().getY()
+    p2x = barra.getP2().getX()
+    p2y = barra.getP2().getY()
+    r = raio[resolucao]
+    d = dificuldade * 0.1
+
+    if bx <= r + 5 and by <= r + 5:
         x, y = -x, -y
-    elif ball.getCenter().getX() >= resolucao-raio[resolucao]-6 \
-            and ball.getCenter().getY() >= resolucao-raio[resolucao]-6:
+    elif bx >= resolucao - r - 6 and by >= resolucao - r - 6:
         acabou = True
-    elif ball.getCenter().getX() < raio[resolucao]+5:
+    elif bx < r + 5:
         x = -x
-    elif ball.getCenter().getY() < raio[resolucao]+5:
+    elif by < r + 5:
         y = -y
-    elif ball.getCenter().getX() > resolucao-raio[resolucao]-6:
+    elif bx > resolucao - r - 6:
         x = -x
-    elif ball.getCenter().getY() > resolucao-raio[resolucao]-6:
+    elif by > resolucao - r - 6:
         acabou = True
-    elif barra.getP1().getX() <= ball.getCenter().getX() + raio[resolucao] and \
-            ball.getCenter().getX() - raio[resolucao] <= barra.getP2().getX() and \
-            barra.getP1().getY() <= ball.getCenter().getY() + raio[resolucao] and \
-            ball.getCenter().getY() - raio[resolucao] <= barra.getP2().getY():
-        if barra.getP1().getY() == ball.getCenter().getY() + raio[resolucao] and temp:
+    elif p1x <= bx + r and bx - r <= p2x and p1y <= by + r and by - r <= p2y:
+        if p1y == by + r and lateral:
             if x > 0:
-                x += dificuldade * 0.1
+                x += d
             else:
-                x -= dificuldade * 0.1
+                x -= d
             if y > 0:
-                y += dificuldade * 0.1
+                y += d
             else:
-                y -= dificuldade * 0.1
+                y -= d
             y = -y
             pontos += 1
             atualizar_placar()
-        elif temp:
-            temp = False
-            if barra.getP2().getX() == ball.getCenter().getX() - raio[resolucao] and x > 0 or \
-                    barra.getP1().getX() == ball.getCenter().getX() + raio[resolucao] and x < 0:
+        elif lateral:
+            lateral = False
+            if bx - r <= p2x <= bx - r and x < 0 or bx - r <= p1x <= bx + r and x > 0:
                 x = -x
+            else:
+                x *= 3
 
     return x, y
 
