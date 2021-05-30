@@ -7,6 +7,8 @@ resolucao = 500
 fundo = color_rgb(33, 33, 33)
 botoes = color_rgb(255, 248, 171)
 dificuldade = 2
+
+# Varíaveis em desenvolvimento
 acabou = False
 pontos = 0
 placar = None
@@ -81,7 +83,7 @@ def bola(x, y):
     raio = {250: 5, 500: 10, 750: 15, 1000: 20, 1500: 25}
     self = Circle(Point(resolucao*(x/100), resolucao * (y/100)), raio[resolucao])
     self.setFill(botoes)
-#   self.setOutline('white')
+    # self.setOutline('white')
     self.draw(jogo)
     return self
 
@@ -108,7 +110,7 @@ def limpar(lista):
     for _ in lista:
         _.undraw()
 
-# Menu de Resolução
+# Sub-Menu de Resolução
 def menu_resolucao():
     global resolucao, jogo, fundo
     selecionou, selecionado = False, 1
@@ -132,32 +134,32 @@ def menu_resolucao():
     while not selecionou:
         teclas = jogo.checkKey()
 
-        # Setinha p/ cima
-        if teclas == 'Up':
+        # Seleciona p/ cima
+        if teclas in ('Up', 'W', 'w'):
             if selecionado != 1:
                 selecionado -= 1
-        # Setinha p/ baixo
-        elif teclas == 'Down':
+        # Seleciona p/ baixo
+        elif teclas in ('Down', 'S', 's'):
             if selecionado != 6:
                 selecionado += 1
-        # Enter
-        elif teclas == 'Return':
+        # Ao selecionar
+        elif teclas in ('Return', 'space'):
             if selecionado != 6:
-                opcoes = [250, 500, 750, 1000, 1500]
+                opcoes = (250, 500, 750, 1000, 1500)
                 resolucao = opcoes[selecionado - 1]
                 mudar_resolucao()
             limpar(lista)
             return True
         # ESC
-        elif teclas in ['Escape', 'BackSpace']:
+        elif teclas in ('Escape', 'BackSpace'):
             limpar(lista)
             menu_principal()
 
         # Função para checagem do selecionado
-        listaop = [op1, op2, op3, op4, op5, op6]
+        listaop = (op1, op2, op3, op4, op5, op6)
         resetar_outline(listaop, selecionado)
 
-# Menu de Dificuldade
+# Sub-Menu de Dificuldade
 def menu_dificuldade():
     global fundo, resolucao, dificuldade
     selecionou, selecionado = False, 1
@@ -180,30 +182,33 @@ def menu_dificuldade():
     while not selecionou:
         teclas = jogo.checkKey()
 
-        # Setinha p/ cima
-        if teclas == 'Up':
+        # Seleciona p/ cima
+        if teclas in ('Up', 'W', 'w'):
             if selecionado != 1:
                 selecionado -= 1
-        # Setinha p/ baixo
-        elif teclas == 'Down':
+        # Seleciona p/ baixo
+        elif teclas in ('Down', 'S', 's'):
             if selecionado != 4:
                 selecionado += 1
-        # Enter
-        elif teclas == 'Return':
+        # Ao selecionar
+        elif teclas in ('Return', 'space'):
             if selecionado != 4:
-                opcoes = [1, 2, 3]
+                # Muda a dificuldade
+                opcoes = (1, 2, 3)
                 dificuldade = opcoes[selecionado - 1]
             limpar(lista)
             return True
         # ESC
-        elif teclas in ['Escape', 'BackSpace']:
+        elif teclas in ('Escape', 'BackSpace'):
+            # Volta para o Menu Principal
             limpar(lista)
             menu_principal()
 
         # Função para checagem do selecionado
-        listaop = [op1, op2, op3, op4]
+        listaop = (op1, op2, op3, op4)
         resetar_outline(listaop, selecionado)
 
+# Sub-Menu de Tutorial
 def menu_comojogar():
     global fundo, resolucao
     selecionou, selecionado = False, 1
@@ -226,11 +231,11 @@ def menu_comojogar():
         teclas = jogo.checkKey()
 
         # Enter
-        if teclas == 'Return':
+        if teclas in ('Return', 'space'):
             limpar(lista)
             return True
         # ESC
-        elif teclas in ['Escape', 'BackSpace']:
+        elif teclas in ('Escape', 'BackSpace'):
             limpar(lista)
             menu_principal()
 
@@ -238,6 +243,7 @@ def menu_comojogar():
         listaop = [op1]
         resetar_outline(listaop, selecionado)
 
+# Sub-Menu de Créditos
 def menu_creditos():
     global fundo, resolucao
     selecionou, selecionado = False, 1
@@ -259,11 +265,11 @@ def menu_creditos():
         teclas = jogo.checkKey()
 
         # Enter
-        if teclas == 'Return':
+        if teclas in ('Return', 'space'):
             limpar(lista)
             return True
         # ESC
-        elif teclas in ['Escape', 'BackSpace']:
+        elif teclas in ('Escape', 'BackSpace'):
             limpar(lista)
             menu_principal()
 
@@ -271,30 +277,37 @@ def menu_creditos():
         listaop = [op1]
         resetar_outline(listaop, selecionado)
 
+# Jogo Principal
 def jogo_principal():
     global resolucao, fundo, jogo, acabou, pontos, placar, lateral
 
+    # Ativa o 'autoflush' para a gente manipular quadros
     jogo.autoflush = True
 
-    iniciar, acabou = False, False
+    # Variáveis necessárias
+    pausa, acabou = True, False
     pontos = 0
-
-    texto0 = texto_sem_ret(50, 40, True, 'PARA INICIAR O JOGO')
-    texto1 = texto_sem_ret(50, 30, True, 'APERTE ENTER')
-
-#   Para X:
-#   1 = Direita
-#  -1 = Esquerda
-
-#   Para Y:
-#   1 = Baixo
-#  -1 = Cima
-
+    """
+    
+       Para X:
+       1 = Direita
+      -1 = Esquerda
+    
+       Para Y:
+       1 = Baixo
+      -1 = Cima
+      
+    """
+    # Gera pra onde a bolinha vai (random e para cima)
     x, y = randrange(-1, 2, 2), -1
+    # Cria a primeira posição da bolinha (random com limites)
     bolinha = bola(randrange(45, 56), 72)
+    # Cria as barras da margem
     self, self2 = margem()
+    # Variável da lateral da barra
     lateral = True
 
+    # Gera a barra dependendo da dificuldade
     if dificuldade == 1:
         barra = criar_barra(30, 75, 70, 77)
     elif dificuldade == 3:
@@ -302,69 +315,116 @@ def jogo_principal():
     else:
         barra = criar_barra(40, 75, 60, 77)
 
+    # Gera o placar
     placar = atualizar_placar()
 
-    while not iniciar:
+    # Pressione Enter para iniciar
+    pausar()
 
-        teclas = jogo.checkKey()
-
-        #       Iniciar quando clicar Enter
-        if teclas == 'Return':
-            texto = [texto0, texto1]
-            limpar(texto)
-            iniciar = True
-        elif teclas in ['Escape', 'BackSpace']:
-            iniciar, acabou = True, True
-
+    # Núcleo do Jogo
     while not acabou:
 
         teclas = jogo.checkKey()
 
-        if teclas == 'Right' and barra.getP2().getX() <= resolucao-11:
+        # Barra vai para a direita até o limite da margem
+        if teclas in ('Right', 'D', 'd') and barra.getP2().getX() <= resolucao-11:
+
+            # Cálculo do movimento da barra
             if x > 0:
                 barra.move(5 + x * dificuldade, 0)
             else:
                 barra.move(-(-5 + x * dificuldade), 0)
-        elif teclas == 'Left' and barra.getP1().getX() >= 10:
+
+        # Barra vai para a esquerda até o limite da margem
+        elif teclas in ('Left', 'A', 'a') and barra.getP1().getX() >= 10:
+
+            # Cálculo do movimento da barra
             if x > 0:
                 barra.move(-(5 + x * dificuldade), 0)
             else:
                 barra.move((-5 + x * dificuldade), 0)
-        elif teclas in ['Escape', 'BackSpace']:
-            acabou = True
 
+        # Pausa o Jogo
+        elif teclas in ('Escape', 'BackSpace'):
+            pausar()
+
+        # Checa se bateu a cada atualização
         x, y = bateu(bolinha, x, y, barra)
+        # Cálculo do movimento da bolinha
         bolinha.move(resolucao*(x/1000*dificuldade), resolucao*(y/1000*dificuldade))
+        # Debug
         print(resolucao*(x/1000*dificuldade), resolucao*(y/1000*dificuldade))
+        # Taxa de atualização (60hz)
         update(60)
-    lista = (texto0, texto1, bolinha, placar, self, self2, barra)
+
+    # Quando acabar, limpar tudo e voltar para o Menu
+    lista = (bolinha, placar, self, self2, barra)
     limpar(lista)
     menu_principal()
 
+# Função de Pause
+def pausar():
+    # Variáveis necessárias
+    texto0 = texto_sem_ret(50, 30, True, '>>> JOGO PAUSADO <<<')
+    texto1 = texto_sem_ret(50, 40, True, '[ENTER] JOGAR')
+    texto2 = texto_sem_ret(50, 50, True, '[ESC] MENU')
+    global acabou
+    pausa = True
+
+    while pausa:
+
+        teclas = jogo.checkKey()
+
+        # Retornar ao clicar Enter
+        if teclas in ('Return', 'space'):
+            texto = (texto0, texto1, texto2)
+            limpar(texto)
+            pausa = False
+
+        # Acabar ao clicar ESC
+        elif teclas in ('Escape', 'BackSpace'):
+            texto = (texto0, texto1, texto2)
+            limpar(texto)
+            pausa, acabou = False, True
+
+# Função de criação da Margem
 def margem():
     global resolucao, fundo, botoes
+    # Criar um retângulo de margem nas bordas
     self = Rectangle(Point(1, 1), Point(resolucao-1, resolucao-1))
     self.setOutline(botoes)
     self.setWidth(10)
     self.draw(jogo)
+    # Deletar a parte de baixo
     self2 = Line(Point(0, resolucao-1), Point(resolucao, resolucao-1))
     self2.setOutline(fundo)
     self2.setWidth(10)
     self2.draw(jogo)
     return self, self2
 
-
+# Função para checar se bateu
 def bateu(ball, x, y, barra):
     global acabou, dificuldade, pontos, placar, lateral
+
+    # [Dicionário] Resolução: Raio
     raio = {250: 5, 500: 10, 750: 15, 1000: 20, 1500: 25}
 
+    # Criação de variáveis repetitivas:
+    # BolaX
     bx = ball.getCenter().getX()
+    # BolaY
     by = ball.getCenter().getY()
+    # Barra P1 X
     p1x = barra.getP1().getX()
+    # Barra P1 Y
     p1y = barra.getP1().getY()
+    # Barra P2 X
     p2x = barra.getP2().getX()
+    # Barra P2 Y
     p2y = barra.getP2().getY()
+    # Raio pela resuolução
     r = raio[resolucao]
+    # Dificuldade
     d = dificuldade * 0.1
 
     if bx <= r + 5 and by <= r + 5:
@@ -401,18 +461,25 @@ def bateu(ball, x, y, barra):
 
     return x, y
 
+# Função de Criação e Atualização do Placar
 def atualizar_placar():
     global pontos, placar
+    # Não deixa dar undraw caso não exista (0 pts)
     if pontos > 0:
         placar.undraw()
+    # Fica dando undraw e draw
     placar = texto_sem_ret(50, 90, True, f'PONTUAÇÃO ATUAL: {pontos}')
     return placar
 
 # Menu Principal
 def menu_principal():
     global fundo, resolucao, jogo
+
+    # Variáveis necessárias
     selecionado = 1
     selecionou, selecionou_opcao = False, False
+
+    # Desativa o 'autoflush' caso o jogador venha do Jogo
     jogo.autoflush = False
 
     op1 = retangulo(5, 35, 95, 20)
@@ -421,7 +488,7 @@ def menu_principal():
     op4 = retangulo(5, 80, 95, 70)
     op5 = retangulo(5, 95, 95, 85)
 
-#   Função texto em prática
+    # Função texto em prática
     texto0 = texto_sem_ret(50, 10, True, 'MENU PRINCIPAL')
     texto5 = texto_ret(op1, 'JOGAR')
     texto1 = texto_ret(op2, 'RESOLUÇÃO')
@@ -429,21 +496,22 @@ def menu_principal():
     texto3 = texto_ret(op4, 'COMO JOGAR')
     texto4 = texto_ret(op5, 'CRÉDITOS')
 
+    # Enquanto não selecionar nada, continua no Menu
     while not selecionou:
 
         teclas = jogo.checkKey()
 
-#       Setinha p/ cima
-        if teclas == 'Up':
+        # Seleciona p/ cima
+        if teclas in ('Up', 'W', 'w'):
             if selecionado != 1:
                 selecionado -= 1
-#       Setinha p/ baixo
-        elif teclas == 'Down':
+        # Seleciona p/ baixo
+        elif teclas in ('Down', 'S', 's'):
             if selecionado != 5:
                 selecionado += 1
-#       Enter
-        elif teclas == 'Return':
-            lista = [op1, op2, op3, op4, op5, texto0, texto1, texto2, texto3, texto4, texto5]
+        # Ao selecionar
+        elif teclas in ('Return', 'space'):
+            lista = (op1, op2, op3, op4, op5, texto0, texto1, texto2, texto3, texto4, texto5)
             limpar(lista)
             if selecionado == 1:
                 selecionou = True
@@ -456,16 +524,16 @@ def menu_principal():
                 selecionou_opcao = menu_comojogar()
             elif selecionado == 5:
                 selecionou_opcao = menu_creditos()
-#       ESC
-        elif teclas in ['Escape', 'BackSpace']:
+        # ESC
+        elif teclas in ('Escape', 'BackSpace'):
             exit()
 
-#       Função para checagem do selecionado
+        # Função para checagem do selecionado
         if selecionou_opcao:
             selecionou_opcao = False
             menu_principal()
 
-        listaop = [op1, op2, op3, op4, op5]
+        listaop = (op1, op2, op3, op4, op5)
         resetar_outline(listaop, selecionado)
 
 
