@@ -376,9 +376,10 @@ def jogo_principal():
 # Resultado final
 def resultado():
     # Variáveis necessárias
-    texto0 = texto_sem_ret(50, 30, True, '>> Você perderá seu progresso <<')
-    texto1 = texto_sem_ret(50, 40, True, '[ENTER] Confirmar')
-    texto2 = texto_sem_ret(50, 50, True, '[ESC] Voltar')
+    global pontos
+    texto0 = texto_sem_ret(50, 45, False, 'VOCÊ DEIXOU A BOLINHA CAIR =(')
+    texto1 = texto_sem_ret(50, 55, False, f'PONTUAÇÃO FINAL: {pontos}')
+    texto2 = texto_sem_ret(50, 65, False, '[ESC] Menu')
 
     voltar = False
 
