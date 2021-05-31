@@ -5,7 +5,8 @@ import time
 # Variáveis globais
 resolucao = 500
 fundo = color_rgb(33, 33, 33)
-botoes = color_rgb(255, 248, 171)
+# Antigo: botoes = color_rgb(255, 248, 171)
+botoes = color_rgb(163, 103, 127)
 dificuldade = 2
 
 # Varíaveis em desenvolvimento
@@ -308,10 +309,13 @@ def jogo_principal():
     lateral = True
 
     # Gera a barra dependendo da dificuldade
+    # Fácil
     if dificuldade == 1:
         barra = criar_barra(30, 75, 70, 77)
+    # Difícil
     elif dificuldade == 3:
         barra = criar_barra(45, 75, 55, 77)
+    # Normal
     else:
         barra = criar_barra(40, 75, 60, 77)
 
@@ -327,7 +331,9 @@ def jogo_principal():
         teclas = jogo.checkKey()
 
         # Barra vai para a direita até o limite da margem
-        if teclas in ('Right', 'D', 'd') and barra.getP2().getX() <= resolucao-11:
+        # 9 = Margem-1 para corrigir quando não bate na parede por conta da velocidade variável
+        # To-do (Bug Visual): Dependendo do movimento, fica sobrando ou não 1px
+        if teclas in ('Right', 'D', 'd') and barra.getP2().getX() <= resolucao-9:
 
             # Cálculo do movimento da barra
             if x > 0:
@@ -336,13 +342,15 @@ def jogo_principal():
                 barra.move(-(-5 + x * dificuldade), 0)
 
         # Barra vai para a esquerda até o limite da margem
-        elif teclas in ('Left', 'A', 'a') and barra.getP1().getX() >= 10:
+        # 9 = Margem-1 para corrigir quando não bate na parede por conta da velocidade variável
+        # To-do (Bug Visual): Dependendo do movimento, fica sobrando ou não 1px
+        elif teclas in ('Left', 'A', 'a') and barra.getP1().getX() >= 9:
 
             # Cálculo do movimento da barra
             if x > 0:
                 barra.move(-(5 + x * dificuldade), 0)
             else:
-                barra.move((-5 + x * dificuldade), 0)
+                barra.move(-5 + x * dificuldade, 0)
 
         # Pausa o Jogo
         elif teclas in ('Escape', 'BackSpace'):
@@ -357,17 +365,39 @@ def jogo_principal():
         # Taxa de atualização (60hz)
         update(60)
 
-    # Quando acabar, limpar tudo e voltar para o Menu
+    # Limpar tudo ao acabar
     lista = (bolinha, placar, self, self2, barra)
     limpar(lista)
+    # Mostrar o placar final
+    resultado()
+    # Voltar ao Menu
     menu_principal()
+
+# Resultado final
+def resultado():
+    # Variáveis necessárias
+    texto0 = texto_sem_ret(50, 30, True, '>> Você perderá seu progresso <<')
+    texto1 = texto_sem_ret(50, 40, True, '[ENTER] Confirmar')
+    texto2 = texto_sem_ret(50, 50, True, '[ESC] Voltar')
+
+    voltar = False
+
+    while not voltar:
+
+        teclas = jogo.checkKey()
+
+        # Retornar ao Menu
+        if teclas in ('Return', 'space', 'Escape', 'BackSpace'):
+            texto = (texto0, texto1, texto2)
+            limpar(texto)
+            voltar = True
 
 # Função de Pause
 def pausar():
     # Variáveis necessárias
     texto0 = texto_sem_ret(50, 30, True, '>>> JOGO PAUSADO <<<')
-    texto1 = texto_sem_ret(50, 40, True, '[ENTER] JOGAR')
-    texto2 = texto_sem_ret(50, 50, True, '[ESC] MENU')
+    texto1 = texto_sem_ret(50, 40, True, '[ENTER] Jogar')
+    texto2 = texto_sem_ret(50, 50, True, '[ESC] Menu')
     global acabou
     pausa = True
 
@@ -385,20 +415,48 @@ def pausar():
         elif teclas in ('Escape', 'BackSpace'):
             texto = (texto0, texto1, texto2)
             limpar(texto)
-            pausa, acabou = False, True
+            pausa = False
+            confirmar()
+
+# Confirmar ao voltar p/ o Menu
+def confirmar():
+    # Variáveis necessárias
+    texto0 = texto_sem_ret(50, 30, True, '>> Você perderá seu progresso <<')
+    texto1 = texto_sem_ret(50, 40, True, '[ENTER] Confirmar')
+    texto2 = texto_sem_ret(50, 50, True, '[ESC] Voltar')
+    global acabou
+    confirma = True
+
+    while confirma:
+
+        teclas = jogo.checkKey()
+
+        # Retornar ao clicar Enter
+        if teclas in ('Return', 'space'):
+            texto = (texto0, texto1, texto2)
+            limpar(texto)
+            confirma, acabou = False, True
+
+        # Acabar ao clicar ESC
+        elif teclas in ('Escape', 'BackSpace'):
+            texto = (texto0, texto1, texto2)
+            limpar(texto)
+            confirma = False
+            pausar()
 
 # Função de criação da Margem
 def margem():
     global resolucao, fundo, botoes
     # Criar um retângulo de margem nas bordas
-    self = Rectangle(Point(1, 1), Point(resolucao-1, resolucao-1))
+    self = Rectangle(Point(1, 1), Point(resolucao-1, resolucao * (80 / 100)))
     self.setOutline(botoes)
     self.setWidth(10)
     self.draw(jogo)
     # Deletar a parte de baixo
-    self2 = Line(Point(0, resolucao-1), Point(resolucao, resolucao-1))
-    self2.setOutline(fundo)
+    self2 = Rectangle(Point(0, resolucao * (80 / 100)), Point(resolucao-1, resolucao-1))
+    self2.setOutline(botoes)
     self2.setWidth(10)
+    self2.setFill(botoes)
     self2.draw(jogo)
     return self, self2
 
@@ -427,18 +485,23 @@ def bateu(ball, x, y, barra):
     # Dificuldade
     d = dificuldade * 0.1
 
-    if bx <= r + 5 and by <= r + 5:
+    # Canto superior esquerdo e superior direito
+    if bx <= r + 5 and by <= r + 5 \
+            or bx >= resolucao - r - 5 and by >= resolucao - r - 5:
         x, y = -x, -y
-    elif bx >= resolucao - r - 6 and by >= resolucao - r - 6:
-        acabou = True
+    # Lado esquerdo
     elif bx < r + 5:
         x = -x
+    # Lado superior
     elif by < r + 5:
         y = -y
-    elif bx > resolucao - r - 6:
+    # Lado direito
+    elif bx > resolucao - r - 5:
         x = -x
-    elif by > resolucao - r - 6:
+    # Lado inferior
+    elif by >= resolucao - r - 5:
         acabou = True
+    #
     elif p1x <= bx + r and bx - r <= p2x and p1y <= by + r and by - r <= p2y:
         if p1y == by + r and lateral:
             if x > 0:
@@ -452,23 +515,27 @@ def bateu(ball, x, y, barra):
             y = -y
             pontos += 1
             atualizar_placar()
+        # Lateral da barra (se bater uma vez já era, não tem como recuperar a bolinha)
         elif lateral:
+            # Variável para bater apenas uma vez
             lateral = False
+            # Inverter a posição na hora da batida dependendo da condição (fixado alguns bugs)
             if bx - r <= p2x <= bx - r and x < 0 or bx - r <= p1x <= bx + r and x > 0:
                 x = -x
-            else:
-                x *= 3
+            # Aumentar a velocidade quando bate na lateral (efeito visual)
+            x *= 3
 
     return x, y
 
 # Função de Criação e Atualização do Placar
 def atualizar_placar():
-    global pontos, placar
+    global pontos, placar, fundo
     # Não deixa dar undraw caso não exista (0 pts)
     if pontos > 0:
         placar.undraw()
     # Fica dando undraw e draw
     placar = texto_sem_ret(50, 90, True, f'PONTUAÇÃO ATUAL: {pontos}')
+    placar.setTextColor(fundo)
     return placar
 
 # Menu Principal
