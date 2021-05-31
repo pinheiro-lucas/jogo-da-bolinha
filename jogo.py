@@ -275,7 +275,7 @@ def menu_creditos():
             menu_principal()
 
         # Função para checagem do selecionado
-        listaop = [op1]
+        listaop = (op1,)
         resetar_outline(listaop, selecionado)
 
 # Jogo Principal
@@ -322,7 +322,7 @@ def jogo_principal():
     # Gera o placar
     placar = atualizar_placar()
 
-    # Pressione Enter para iniciar
+    # Pressione Enter para iniciar (Obs: aqui é a introdução do jogo, não deveria aparecer que está pausado) ----------------------
     pausar()
 
     # Núcleo do Jogo
@@ -361,7 +361,8 @@ def jogo_principal():
         # Cálculo do movimento da bolinha
         bolinha.move(resolucao*(x/1000*dificuldade), resolucao*(y/1000*dificuldade))
         # Debug
-        print(resolucao*(x/1000*dificuldade), resolucao*(y/1000*dificuldade))
+        time.sleep(0.01)
+        # print(resolucao*(x/1000*dificuldade), resolucao*(y/1000*dificuldade))
         # Taxa de atualização (60hz)
         update(60)
 
@@ -500,10 +501,12 @@ def bateu(ball, x, y, barra):
     elif bx > resolucao - r - 5:
         x = -x
     # Lado inferior
-    elif by >= resolucao - r - 5:
+    elif by >= resolucao - r - 5 - 0.2*resolucao:
         acabou = True
     #
     elif p1x <= bx + r and bx - r <= p2x and p1y <= by + r and by - r <= p2y:
+        if dificuldade == 3:
+            r -= 1
         if p1y == by + r and lateral:
             if x > 0:
                 x += d
