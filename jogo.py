@@ -361,8 +361,7 @@ def jogo_principal():
         # Cálculo do movimento da bolinha
         bolinha.move(resolucao*(x/1000*dificuldade), resolucao*(y/1000*dificuldade))
         # Debug
-        time.sleep(0.01)
-        # print(resolucao*(x/1000*dificuldade), resolucao*(y/1000*dificuldade))
+        print(resolucao*(x/1000*dificuldade), resolucao*(y/1000*dificuldade))
         # Taxa de atualização (60hz)
         update(60)
 
