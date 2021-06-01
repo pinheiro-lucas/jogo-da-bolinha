@@ -81,8 +81,12 @@ def texto_sem_ret(x, y, t, msg):
 # Função da Bolinha
 def bola(x, y):
     global jogo, resolucao, botoes
-    raio = {250: 5, 500: 10, 750: 15, 1000: 20, 1500: 25}
-    self = Circle(Point(resolucao*(x/100), resolucao * (y/100)), raio[resolucao])
+    # Fórmula para o raio da circunferência
+    if dificuldade == 3:
+        r = (9/500)*resolucao
+    else:
+        r = resolucao/50
+    self = Circle(Point(resolucao*(x/100), resolucao * (y/100)), r)
     self.setFill(botoes)
     # self.setOutline('white')
     self.draw(jogo)
@@ -280,7 +284,7 @@ def menu_creditos():
 
 # Jogo Principal
 def jogo_principal():
-    global resolucao, fundo, jogo, acabou, pontos, placar, lateral
+    global resolucao, fundo, jogo, acabou, pontos, placar, lateral, dificuldade
 
     # Ativa o 'autoflush' para a gente manipular quadros
     jogo.autoflush = True
@@ -318,6 +322,13 @@ def jogo_principal():
     # Normal
     else:
         barra = criar_barra(40, 75, 60, 77)
+
+    """
+    TESTE
+    if dificuldade == 1:
+        barra = criar_barra(1, 75, 99, 77)
+        dificuldade = 3
+    """
 
     # Gera o placar
     placar = atualizar_placar()
@@ -361,7 +372,7 @@ def jogo_principal():
         # Cálculo do movimento da bolinha
         bolinha.move(resolucao*(x/1000*dificuldade), resolucao*(y/1000*dificuldade))
         # Debug
-        print(resolucao*(x/1000*dificuldade), resolucao*(y/1000*dificuldade))
+        #print(resolucao*(x/1000*dificuldade), resolucao*(y/1000*dificuldade))
         # Taxa de atualização (60hz)
         update(60)
 
@@ -465,8 +476,11 @@ def margem():
 def bateu(ball, x, y, barra):
     global acabou, dificuldade, pontos, placar, lateral
 
-    # [Dicionário] Resolução: Raio
-    raio = {250: 5, 500: 10, 750: 15, 1000: 20, 1500: 25}
+    # Fórmula para o raio da circunferência
+    if dificuldade == 3:
+        r = (9/500)*resolucao
+    else:
+        r = 50/resolucao
 
     # Criação de variáveis repetitivas:
     # BolaX
@@ -481,32 +495,24 @@ def bateu(ball, x, y, barra):
     p2x = barra.getP2().getX()
     # Barra P2 Y
     p2y = barra.getP2().getY()
-    # Raio pela resuolução
-    r = raio[resolucao]
     # Dificuldade
     d = dificuldade * 0.1
 
-    # Canto superior esquerdo e superior direito
-    if bx <= r + 5 and by <= r + 5 \
-            or bx >= resolucao - r - 5 and by >= resolucao - r - 5:
-        x, y = -x, -y
-    # Lado esquerdo
-    elif bx < r + 5:
-        x = -x
-    # Lado superior
-    elif by < r + 5:
-        y = -y
-    # Lado direito
-    elif bx > resolucao - r - 5:
-        x = -x
-    # Lado inferior
-    elif by >= resolucao - r - 5 - 0.2*resolucao:
-        acabou = True
-    #
-    elif p1x <= bx + r and bx - r <= p2x and p1y <= by + r and by - r <= p2y:
-        if dificuldade == 3:
-            r -= 1
+    # Verificando o intervalo entre o ponto mais à esquerda da barra e o mais a direita da barra
+    # (duas primeiras condições) e as duas últimas condições o intervalo do ponto mais e baixo e mais acima
+    if p1x <= bx + r and bx - r <= p2x and p1y <= by + r and by - r <= p2y:
+        
+        """
+        Debug
+        print(f"P1({p1x}, {p1y})")
+        print(f"P2({p2x}, {p2y})")
+        print(f"B({bx}, {by})")
+        print("BATEU")
+        """
+        
+        # Verificando se a bola está no topo da barra
         if p1y == by + r and lateral:
+            # Aumentar o x, que representa a velocidade da bola para os lados, com base na dificuldade
             if x > 0:
                 x += d
             else:
@@ -515,7 +521,9 @@ def bateu(ball, x, y, barra):
                 y += d
             else:
                 y -= d
+            # Inverter a direção da bola para cima, já que ela bateu no topo da barra
             y = -y
+            # Incrementar os pontos no placar
             pontos += 1
             atualizar_placar()
         # Lateral da barra (se bater uma vez já era, não tem como recuperar a bolinha)
@@ -526,7 +534,21 @@ def bateu(ball, x, y, barra):
             if bx - r <= p2x <= bx - r and x < 0 or bx - r <= p1x <= bx + r and x > 0:
                 x = -x
             # Aumentar a velocidade quando bate na lateral (efeito visual)
-            x *= 3
+            x *= 3    
+
+    # Lado esquerdo
+    if bx < r + 5:
+        x = -x
+    # Lado superior
+    if by < r + 5:
+        y = -y
+    # Lado direito
+    if bx > resolucao - r - 5:
+        x = -x
+    # Lado inferior
+    if by >= resolucao - r - 5 - 0.2*resolucao:
+        acabou = True
+
 
     return x, y
 
