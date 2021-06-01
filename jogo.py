@@ -56,7 +56,7 @@ def texto_ret(ret, msg):
     self.setTextColor(fundo)
     self.setStyle('bold')
     self.setFace('times roman')
-    tamanho_normal = {250: 10, 500: 15, 750: 20, 1000: 25, 1500: 30}
+    tamanho_normal = {250: 10, 500: 15, 750: 20, 1000: 25}
     self.setSize(tamanho_normal[resolucao])
     self.draw(jogo)
     return self
@@ -69,11 +69,11 @@ def texto_sem_ret(x, y, t, msg):
     self.setTextColor(botoes)
     self.setFace('times roman')
     if t:
-        tamanho_maior = {250: 15, 500: 20, 750: 25, 1000: 30, 1500: 35}
+        tamanho_maior = {250: 15, 500: 20, 750: 25, 1000: 30}
         self.setSize(tamanho_maior[resolucao])
         self.draw(jogo)
         return self
-    tamanho_normal = {250: 10, 500: 15, 750: 20, 1000: 25, 1500: 30}
+    tamanho_normal = {250: 10, 500: 15, 750: 20, 1000: 25}
     self.setSize(tamanho_normal[resolucao])
     self.draw(jogo)
     return self
@@ -124,17 +124,15 @@ def menu_resolucao():
     op2 = retangulo(5, 30, 95, 20)
     op3 = retangulo(5, 45, 95, 35)
     op4 = retangulo(5, 60, 95, 50)
-    op5 = retangulo(5, 75, 95, 65)
-    op6 = retangulo(5, 95, 95, 85)
+    op5 = retangulo(5, 95, 95, 85)
 
     texto1 = texto_ret(op1, '250x250')
     texto2 = texto_ret(op2, '500x500')
     texto3 = texto_ret(op3, '750x750')
     texto4 = texto_ret(op4, '1000x1000')
-    texto5 = texto_ret(op5, '1500x1500')
-    texto6 = texto_ret(op6, '< Voltar')
+    texto5 = texto_ret(op5, '< Voltar')
 
-    lista = (op1, op2, op3, op4, op5, op6, texto1, texto2, texto3, texto4, texto5, texto6)
+    lista = (op1, op2, op3, op4, op5, texto1, texto2, texto3, texto4, texto5)
 
     while not selecionou:
         teclas = jogo.checkKey()
@@ -145,12 +143,12 @@ def menu_resolucao():
                 selecionado -= 1
         # Seleciona p/ baixo
         elif teclas in ('Down', 'S', 's'):
-            if selecionado != 6:
+            if selecionado != 5:
                 selecionado += 1
         # Ao selecionar
         elif teclas in ('Return', 'space'):
-            if selecionado != 6:
-                opcoes = (250, 500, 750, 1000, 1500)
+            if selecionado != 5:
+                opcoes = (250, 500, 750, 1000)
                 resolucao = opcoes[selecionado - 1]
                 mudar_resolucao()
             limpar(lista)
@@ -161,7 +159,7 @@ def menu_resolucao():
             menu_principal()
 
         # Função para checagem do selecionado
-        listaop = (op1, op2, op3, op4, op5, op6)
+        listaop = (op1, op2, op3, op4, op5)
         resetar_outline(listaop, selecionado)
 
 # Sub-Menu de Dificuldade
@@ -480,7 +478,7 @@ def bateu(ball, x, y, barra):
     if dificuldade == 3:
         r = (9/500)*resolucao
     else:
-        r = 50/resolucao
+        r = resolucao/50
 
     # Criação de variáveis repetitivas:
     # BolaX
@@ -502,13 +500,12 @@ def bateu(ball, x, y, barra):
     # (duas primeiras condições) e as duas últimas condições o intervalo do ponto mais e baixo e mais acima
     if p1x <= bx + r and bx - r <= p2x and p1y <= by + r and by - r <= p2y:
         
-        """
-        Debug
+        # Debug
         print(f"P1({p1x}, {p1y})")
         print(f"P2({p2x}, {p2y})")
         print(f"B({bx}, {by})")
         print("BATEU")
-        """
+        
         
         # Verificando se a bola está no topo da barra
         if p1y == by + r and lateral:
