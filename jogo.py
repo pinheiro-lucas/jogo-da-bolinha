@@ -1,123 +1,115 @@
 from graphics import *
 from random import randrange
-import time
 
-# Variáveis globais
-resolucao = 500
-fundo = color_rgb(33, 33, 33)
-# Antigo: botoes = color_rgb(255, 248, 171)
-botoes = color_rgb(163, 103, 127)
-dificuldade = 2
+# Variáveis Globais
+RESOLUCAO, DIFICULDADE = 500, 2
+FUNDO, BOTOES = color_rgb(33, 33, 33), color_rgb(163, 103, 127)
+ACABOU, PLACAR, LATERAL = False, None, True
+PONTOS = 0
+_COMECOU, _CAIU = False, False
 
-# Varíaveis em desenvolvimento
-acabou = False
-pontos = 0
-placar = None
-lateral = True
 
 # Cria o Menu Principal
-jogo = GraphWin('Jogo da Bolinha', resolucao, resolucao, autoflush=False)
-jogo.setBackground(fundo)
+jogo = GraphWin('Jogo da Bolinha', RESOLUCAO, RESOLUCAO, autoflush=False)
+jogo.setBackground(FUNDO)
 
-# Função de animação (futura)
-def animacao(self, x, y):
-    self.undraw()
-    self.move(x, y)
-    self.draw(jogo)
-    time.sleep(1)
-    self.undraw()
-    self.move(-x, -y)
-    self.draw(jogo)
-    time.sleep(1)
 
 # Animação de seleção
 def resetar_outline(listaop, s):
-    global fundo
+    global FUNDO
     for element in listaop:
         if listaop.index(element) == s - 1:
             element.setOutline('white')
         else:
-            element.setOutline(fundo)
+            element.setOutline(FUNDO)
+
 
 # Função do Retângulo
 def retangulo(x1, y1, x2, y2):
-    global botoes, resolucao, jogo
-    self = Rectangle(Point(resolucao * (x1 / 100), resolucao * (y1 / 100)),
-                     Point(resolucao * (x2 / 100), resolucao * (y2 / 100)))
+    global BOTOES, RESOLUCAO, jogo
+    self = Rectangle(Point(RESOLUCAO * (x1 / 100), RESOLUCAO * (y1 / 100)),
+                     Point(RESOLUCAO * (x2 / 100), RESOLUCAO * (y2 / 100)))
     self.setWidth(3)
-    self.setFill(botoes)
+    self.setFill(BOTOES)
     self.draw(jogo)
     return self
+
 
 # Função do Texto
 def texto_ret(ret, msg):
-    global fundo, resolucao, jogo
+    global FUNDO, RESOLUCAO, jogo
     self = Text(ret.getCenter(), msg)
-    self.setTextColor(fundo)
+    self.setTextColor(FUNDO)
     self.setStyle('bold')
     self.setFace('times roman')
     tamanho_normal = {250: 10, 500: 15, 750: 20, 1000: 25}
-    self.setSize(tamanho_normal[resolucao])
+    self.setSize(tamanho_normal[RESOLUCAO])
     self.draw(jogo)
     return self
+
 
 # Função de Texto sem Retângulo
 def texto_sem_ret(x, y, t, msg):
-    global botoes, resolucao, jogo
-    self = Text(Point(resolucao*(x/100), resolucao * (y/100)), msg)
+    global BOTOES, RESOLUCAO, jogo
+    self = Text(Point(RESOLUCAO * (x / 100), RESOLUCAO * (y / 100)), msg)
     self.setStyle('bold')
-    self.setTextColor(botoes)
+    self.setTextColor(BOTOES)
     self.setFace('times roman')
     if t:
         tamanho_maior = {250: 15, 500: 20, 750: 25, 1000: 30}
-        self.setSize(tamanho_maior[resolucao])
+        self.setSize(tamanho_maior[RESOLUCAO])
         self.draw(jogo)
         return self
     tamanho_normal = {250: 10, 500: 15, 750: 20, 1000: 25}
-    self.setSize(tamanho_normal[resolucao])
+    self.setSize(tamanho_normal[RESOLUCAO])
     self.draw(jogo)
     return self
 
+
 # Função da Bolinha
 def bola(x, y):
-    global jogo, resolucao, botoes
+    global jogo, RESOLUCAO, BOTOES
     # Fórmula para o raio da circunferência
-    if dificuldade == 3:
-        r = (9/500)*resolucao
+    if DIFICULDADE == 3:
+        r = (9 / 500) * RESOLUCAO
     else:
-        r = resolucao/50
-    self = Circle(Point(resolucao*(x/100), resolucao * (y/100)), r)
-    self.setFill(botoes)
+        r = RESOLUCAO / 50
+    self = Circle(Point(RESOLUCAO * (x / 100), RESOLUCAO * (y / 100)), r)
+    self.setFill(BOTOES)
     # self.setOutline('white')
     self.draw(jogo)
     return self
 
+
 # Função de Criar a Barrinha
 def criar_barra(x1, y1, x2, y2):
-    global botoes, resolucao, jogo
-    self = Rectangle(Point(resolucao * (x1 / 100), resolucao * (y1 / 100)),
-                     Point(resolucao * (x2 / 100), resolucao * (y2 / 100)))
-    self.setFill(botoes)
+    global BOTOES, RESOLUCAO, jogo
+    self = Rectangle(Point(RESOLUCAO * (x1 / 100), RESOLUCAO * (y1 / 100)),
+                     Point(RESOLUCAO * (x2 / 100), RESOLUCAO * (y2 / 100)))
+    self.setFill(BOTOES)
     self.setWidth(2)
-    self.setOutline(botoes)
+    self.setOutline(BOTOES)
     self.draw(jogo)
     return self
 
+
 # Função para Mudar a Resolução
 def mudar_resolucao():
-    global jogo, resolucao, fundo
+    global jogo, RESOLUCAO, FUNDO
     jogo.close()
-    jogo = GraphWin('Menu do Jogo', resolucao, resolucao)
-    jogo.setBackground(fundo)
+    jogo = GraphWin('Menu do Jogo', RESOLUCAO, RESOLUCAO)
+    jogo.setBackground(FUNDO)
+
 
 # Função de limpar o Menu
 def limpar(lista):
     for _ in lista:
         _.undraw()
 
+
 # Sub-Menu de Resolução
 def menu_resolucao():
-    global resolucao, jogo, fundo
+    global RESOLUCAO, jogo, FUNDO
     selecionou, selecionado = False, 1
 
     op1 = retangulo(5, 15, 95, 5)
@@ -149,7 +141,7 @@ def menu_resolucao():
         elif teclas in ('Return', 'space'):
             if selecionado != 5:
                 opcoes = (250, 500, 750, 1000)
-                resolucao = opcoes[selecionado - 1]
+                RESOLUCAO = opcoes[selecionado - 1]
                 mudar_resolucao()
             limpar(lista)
             return True
@@ -162,9 +154,10 @@ def menu_resolucao():
         listaop = (op1, op2, op3, op4, op5)
         resetar_outline(listaop, selecionado)
 
+
 # Sub-Menu de Dificuldade
 def menu_dificuldade():
-    global fundo, resolucao, dificuldade
+    global FUNDO, RESOLUCAO, DIFICULDADE
     selecionou, selecionado = False, 1
 
     op1 = retangulo(5, 30, 95, 20)
@@ -178,7 +171,7 @@ def menu_dificuldade():
     texto5 = texto_ret(op4, '< Voltar')
 
     dificuldades = ('FÁCIL', 'NORMAL', 'DIFÍCIL')
-    texto4 = texto_sem_ret(50, 10, True, f'DIFICULDADE ATUAL: {dificuldades[dificuldade - 1]}')
+    texto4 = texto_sem_ret(50, 10, True, f'DIFICULDADE ATUAL: {dificuldades[DIFICULDADE - 1]}')
 
     lista = (op1, op2, op3, op4, texto1, texto2, texto3, texto4, texto5)
 
@@ -198,7 +191,7 @@ def menu_dificuldade():
             if selecionado != 4:
                 # Muda a dificuldade
                 opcoes = (1, 2, 3)
-                dificuldade = opcoes[selecionado - 1]
+                DIFICULDADE = opcoes[selecionado - 1]
             limpar(lista)
             return True
         # ESC
@@ -211,9 +204,10 @@ def menu_dificuldade():
         listaop = (op1, op2, op3, op4)
         resetar_outline(listaop, selecionado)
 
+
 # Sub-Menu de Tutorial
 def menu_comojogar():
-    global fundo, resolucao
+    global FUNDO, RESOLUCAO
     selecionou, selecionado = False, 1
 
     op1 = retangulo(5, 95, 95, 85)
@@ -246,9 +240,10 @@ def menu_comojogar():
         listaop = [op1]
         resetar_outline(listaop, selecionado)
 
+
 # Sub-Menu de Créditos
 def menu_creditos():
-    global fundo, resolucao
+    global FUNDO, RESOLUCAO
     selecionou, selecionado = False, 1
 
     op1 = retangulo(5, 95, 95, 85)
@@ -280,26 +275,27 @@ def menu_creditos():
         listaop = (op1,)
         resetar_outline(listaop, selecionado)
 
+
 # Jogo Principal
 def jogo_principal():
-    global resolucao, fundo, jogo, acabou, pontos, placar, lateral, dificuldade
+    global RESOLUCAO, FUNDO, jogo, ACABOU, PONTOS, PLACAR, LATERAL, DIFICULDADE, _CAIU, _COMECOU
 
     # Ativa o 'autoflush' para a gente manipular quadros
     jogo.autoflush = True
 
     # Variáveis necessárias
-    pausa, acabou = True, False
-    pontos = 0
+    ACABOU, _CAIU = False, False
+    PONTOS = 0
     """
-    
-       Para X:
+
+       --- X ---
        1 = Direita
       -1 = Esquerda
-    
-       Para Y:
+
+       --- Y ---
        1 = Baixo
       -1 = Cima
-      
+
     """
     # Gera pra onde a bolinha vai (random e para cima)
     x, y = randrange(-1, 2, 2), -1
@@ -308,14 +304,14 @@ def jogo_principal():
     # Cria as barras da margem
     self, self2 = margem()
     # Variável da lateral da barra
-    lateral = True
+    LATERAL = True
 
     # Gera a barra dependendo da dificuldade
     # Fácil
-    if dificuldade == 1:
+    if DIFICULDADE == 1:
         barra = criar_barra(30, 75, 70, 77)
     # Difícil
-    elif dificuldade == 3:
+    elif DIFICULDADE == 3:
         barra = criar_barra(45, 75, 55, 77)
     # Normal
     else:
@@ -328,27 +324,28 @@ def jogo_principal():
         dificuldade = 3
     """
 
-    # Gera o placar
-    placar = atualizar_placar()
+    # Gera o PLACAR
+    PLACAR = atualizar_placar()
 
-    # Pressione Enter para iniciar (Obs: aqui é a introdução do jogo, não deveria aparecer que está pausado) ----------------------
+    # Pressione Enter para iniciar (Obs: aqui é a introdução do jogo, não deveria aparecer que está pausado)
     pausar()
+    _COMECOU = True
 
     # Núcleo do Jogo
-    while not acabou:
+    while not ACABOU:
 
         teclas = jogo.checkKey()
 
         # Barra vai para a direita até o limite da margem
         # 9 = Margem-1 para corrigir quando não bate na parede por conta da velocidade variável
         # To-do (Bug Visual): Dependendo do movimento, fica sobrando ou não 1px
-        if teclas in ('Right', 'D', 'd') and barra.getP2().getX() <= resolucao-9:
+        if teclas in ('Right', 'D', 'd') and barra.getP2().getX() <= RESOLUCAO - 9:
 
             # Cálculo do movimento da barra
             if x > 0:
-                barra.move(5 + x * dificuldade, 0)
+                barra.move(5 + x * DIFICULDADE, 0)
             else:
-                barra.move(-(-5 + x * dificuldade), 0)
+                barra.move(-(-5 + x * DIFICULDADE), 0)
 
         # Barra vai para a esquerda até o limite da margem
         # 9 = Margem-1 para corrigir quando não bate na parede por conta da velocidade variável
@@ -357,9 +354,9 @@ def jogo_principal():
 
             # Cálculo do movimento da barra
             if x > 0:
-                barra.move(-(5 + x * dificuldade), 0)
+                barra.move(-(5 + x * DIFICULDADE), 0)
             else:
-                barra.move(-5 + x * dificuldade, 0)
+                barra.move(-5 + x * DIFICULDADE, 0)
 
         # Pausa o Jogo
         elif teclas in ('Escape', 'BackSpace'):
@@ -368,27 +365,35 @@ def jogo_principal():
         # Checa se bateu a cada atualização
         x, y = bateu(bolinha, x, y, barra)
         # Cálculo do movimento da bolinha
-        bolinha.move(resolucao*(x/1000*dificuldade), resolucao*(y/1000*dificuldade))
+        bolinha.move(RESOLUCAO * (x / 1000 * DIFICULDADE), RESOLUCAO * (y / 1000 * DIFICULDADE))
         # Debug
-        #print(resolucao*(x/1000*dificuldade), resolucao*(y/1000*dificuldade))
+        # print(RESOLUCAO*(x/1000*DIFICULDADE), RESOLUCAO*(y/1000*DIFICULDADE))
         # Taxa de atualização (60hz)
         update(60)
 
     # Limpar tudo ao acabar
-    lista = (bolinha, placar, self, self2, barra)
+    lista = (bolinha, PLACAR, self, self2, barra)
     limpar(lista)
+    _COMECOU = False
     # Mostrar o placar final
     resultado()
     # Voltar ao Menu
     menu_principal()
 
+
 # Resultado final
 def resultado():
     # Variáveis necessárias
-    global pontos
-    texto0 = texto_sem_ret(50, 45, False, 'VOCÊ DEIXOU A BOLINHA CAIR =(')
-    texto1 = texto_sem_ret(50, 55, False, f'PONTUAÇÃO FINAL: {pontos}')
-    texto2 = texto_sem_ret(50, 65, False, '[ESC] Menu')
+    global PONTOS, _CAIU
+    temp = ['FÁCIL', 'NORMAL', 'DIFÍCIL']
+
+    if _CAIU:
+        texto0 = texto_sem_ret(50, 35, False, '>>> VOCÊ DEIXOU A BOLINHA CAIR <<<')
+    else:
+        texto0 = texto_sem_ret(50, 35, False, '>>> VOCÊ FINALIZOU O JOGO <<<')
+    texto1 = texto_sem_ret(50, 45, False, f'PONTUAÇÃO FINAL: {PONTOS}')
+    texto2 = texto_sem_ret(50, 55, False, f'DIFICULDADE: {temp[DIFICULDADE-1]}')
+    texto3 = texto_sem_ret(50, 65, False, '[ESC] Menu')
 
     voltar = False
 
@@ -398,17 +403,22 @@ def resultado():
 
         # Retornar ao Menu
         if teclas in ('Return', 'space', 'Escape', 'BackSpace'):
-            texto = (texto0, texto1, texto2)
+            texto = (texto0, texto1, texto2, texto3)
             limpar(texto)
             voltar = True
+
 
 # Função de Pause
 def pausar():
     # Variáveis necessárias
-    texto0 = texto_sem_ret(50, 30, True, '>>> JOGO PAUSADO <<<')
+    global ACABOU, PONTOS, _COMECOU
+    if not _COMECOU:
+        texto0 = texto_sem_ret(50, 30, True, '>>> INICIE O JOGO <<<')
+    else:
+        texto0 = texto_sem_ret(50, 30, True, '>>> JOGO PAUSADO <<<')
     texto1 = texto_sem_ret(50, 40, True, '[ENTER] Jogar')
     texto2 = texto_sem_ret(50, 50, True, '[ESC] Menu')
-    global acabou
+
     pausa = True
 
     while pausa:
@@ -428,13 +438,14 @@ def pausar():
             pausa = False
             confirmar()
 
+
 # Confirmar ao voltar p/ o Menu
 def confirmar():
     # Variáveis necessárias
     texto0 = texto_sem_ret(50, 30, True, '>> Você perderá seu progresso <<')
     texto1 = texto_sem_ret(50, 40, True, '[ENTER] Confirmar')
     texto2 = texto_sem_ret(50, 50, True, '[ESC] Voltar')
-    global acabou
+    global ACABOU
     confirma = True
 
     while confirma:
@@ -445,7 +456,7 @@ def confirmar():
         if teclas in ('Return', 'space'):
             texto = (texto0, texto1, texto2)
             limpar(texto)
-            confirma, acabou = False, True
+            confirma, ACABOU = False, True
 
         # Acabar ao clicar ESC
         elif teclas in ('Escape', 'BackSpace'):
@@ -454,31 +465,33 @@ def confirmar():
             confirma = False
             pausar()
 
+
 # Função de criação da Margem
 def margem():
-    global resolucao, fundo, botoes
+    global RESOLUCAO, FUNDO, BOTOES
     # Criar um retângulo de margem nas bordas
-    self = Rectangle(Point(1, 1), Point(resolucao-1, resolucao * (80 / 100)))
-    self.setOutline(botoes)
+    self = Rectangle(Point(1, 1), Point(RESOLUCAO - 1, RESOLUCAO * (80 / 100)))
+    self.setOutline(BOTOES)
     self.setWidth(10)
     self.draw(jogo)
     # Deletar a parte de baixo
-    self2 = Rectangle(Point(0, resolucao * (80 / 100)), Point(resolucao-1, resolucao-1))
-    self2.setOutline(botoes)
+    self2 = Rectangle(Point(0, RESOLUCAO * (80 / 100)), Point(RESOLUCAO - 1, RESOLUCAO - 1))
+    self2.setOutline(BOTOES)
     self2.setWidth(10)
-    self2.setFill(botoes)
+    self2.setFill(BOTOES)
     self2.draw(jogo)
     return self, self2
 
+
 # Função para checar se bateu
 def bateu(ball, x, y, barra):
-    global acabou, dificuldade, pontos, placar, lateral
+    global ACABOU, DIFICULDADE, PONTOS, PLACAR, LATERAL, _CAIU
 
     # Fórmula para o raio da circunferência
-    if dificuldade == 3:
-        r = (9/500)*resolucao
+    if DIFICULDADE == 3:
+        r = (9 / 500) * RESOLUCAO
     else:
-        r = resolucao/50
+        r = RESOLUCAO / 50
 
     # Criação de variáveis repetitivas:
     # BolaX
@@ -493,22 +506,21 @@ def bateu(ball, x, y, barra):
     p2x = barra.getP2().getX()
     # Barra P2 Y
     p2y = barra.getP2().getY()
-    # Dificuldade
-    d = dificuldade * 0.1
+    # DIFICULDADE
+    d = DIFICULDADE * 0.1
 
     # Verificando o intervalo entre o ponto mais à esquerda da barra e o mais a direita da barra
     # (duas primeiras condições) e as duas últimas condições o intervalo do ponto mais e baixo e mais acima
     if p1x <= bx + r and bx - r <= p2x and p1y <= by + r and by - r <= p2y:
-        
+
         # Debug
         print(f"P1({p1x}, {p1y})")
         print(f"P2({p2x}, {p2y})")
         print(f"B({bx}, {by})")
         print("BATEU")
-        
-        
+
         # Verificando se a bola está no topo da barra
-        if p1y == by + r and lateral:
+        if p1y == by + r and LATERAL:
             # Aumentar o x, que representa a velocidade da bola para os lados, com base na dificuldade
             if x > 0:
                 x += d
@@ -521,48 +533,49 @@ def bateu(ball, x, y, barra):
             # Inverter a direção da bola para cima, já que ela bateu no topo da barra
             y = -y
             # Incrementar os pontos no placar
-            pontos += 1
+            PONTOS += 1
             atualizar_placar()
         # Lateral da barra (se bater uma vez já era, não tem como recuperar a bolinha)
-        elif lateral:
+        elif LATERAL:
             # Variável para bater apenas uma vez
-            lateral = False
+            LATERAL = False
             # Inverter a posição na hora da batida dependendo da condição (fixado alguns bugs)
             if bx - r <= p2x <= bx - r and x < 0 or bx - r <= p1x <= bx + r and x > 0:
                 x = -x
             # Aumentar a velocidade quando bate na lateral (efeito visual)
-            x *= 3    
+            x *= 3
 
-    # Lado esquerdo
+            # Lado esquerdo
     if bx < r + 5:
         x = -x
     # Lado superior
     if by < r + 5:
         y = -y
     # Lado direito
-    if bx > resolucao - r - 5:
+    if bx > RESOLUCAO - r - 5:
         x = -x
     # Lado inferior
-    if by >= resolucao - r - 5 - 0.2*resolucao:
-        acabou = True
-
+    if by >= RESOLUCAO - r - 5 - 0.2 * RESOLUCAO:
+        ACABOU, _CAIU = True, True
 
     return x, y
 
+
 # Função de Criação e Atualização do Placar
 def atualizar_placar():
-    global pontos, placar, fundo
+    global PONTOS, PLACAR, FUNDO
     # Não deixa dar undraw caso não exista (0 pts)
-    if pontos > 0:
-        placar.undraw()
+    if PONTOS > 0:
+        PLACAR.undraw()
     # Fica dando undraw e draw
-    placar = texto_sem_ret(50, 90, True, f'PONTUAÇÃO ATUAL: {pontos}')
-    placar.setTextColor(fundo)
-    return placar
+    PLACAR = texto_sem_ret(50, 90, True, f'PONTUAÇÃO ATUAL: {PONTOS}')
+    PLACAR.setTextColor(FUNDO)
+    return PLACAR
+
 
 # Menu Principal
 def menu_principal():
-    global fundo, resolucao, jogo
+    global FUNDO, RESOLUCAO, jogo
 
     # Variáveis necessárias
     selecionado = 1
