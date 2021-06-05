@@ -1,12 +1,13 @@
 from graphics import *
 from random import randrange
+import time
 
 # Variáveis Globais
 RESOLUCAO, DIFICULDADE = 500, 2
 FUNDO, BOTOES = color_rgb(33, 33, 33), color_rgb(163, 103, 127)
-ACABOU, PLACAR, LATERAL = False, None, True
-PONTOS = 0
+ACABOU, PLACAR, LATERAL, EXTRA = False, None, True, False
 _COMECOU, _CAIU = False, False
+PONTOS = 0
 
 
 # Cria o Menu Principal
@@ -241,44 +242,16 @@ def menu_comojogar():
         resetar_outline(listaop, selecionado)
 
 
-# Sub-Menu de Créditos
-def menu_creditos():
-    global FUNDO, RESOLUCAO
-    selecionou, selecionado = False, 1
-
-    op1 = retangulo(5, 95, 95, 85)
-
-    texto1 = texto_ret(op1, '< Voltar')
-
-    texto2 = texto_sem_ret(50, 10, True, 'CRÉDITOS:')
-    texto3 = texto_sem_ret(50, 20, False, 'Lucas Pinheiro')
-    texto4 = texto_sem_ret(50, 25, False, 'Thiago Rabelo')
-    texto5 = texto_sem_ret(50, 30, False, 'Giulia Yule')
-    texto6 = texto_sem_ret(50, 35, False, 'Maria Antônia')
-    texto7 = texto_sem_ret(50, 40, False, 'Luiz Falcão')
-
-    lista = (op1, texto1, texto2, texto3, texto4, texto5, texto6, texto7)
-
-    while not selecionou:
-        teclas = jogo.checkKey()
-
-        # Enter
-        if teclas in ('Return', 'space'):
-            limpar(lista)
-            return True
-        # ESC
-        elif teclas in ('Escape', 'BackSpace'):
-            limpar(lista)
-            menu_principal()
-
-        # Função para checagem do selecionado
-        listaop = (op1,)
-        resetar_outline(listaop, selecionado)
+# Sub-Menu da Fase Extra
+def menu_extra():
+    global EXTRA
+    EXTRA = True
+    jogo_principal()
 
 
 # Jogo Principal
 def jogo_principal():
-    global RESOLUCAO, FUNDO, jogo, ACABOU, PONTOS, PLACAR, LATERAL, DIFICULDADE, _CAIU, _COMECOU
+    global RESOLUCAO, FUNDO, jogo, ACABOU, PONTOS, PLACAR, LATERAL, DIFICULDADE, _CAIU, _COMECOU, EXTRA
 
     # Ativa o 'autoflush' para a gente manipular quadros
     jogo.autoflush = True
@@ -287,12 +260,15 @@ def jogo_principal():
     ACABOU, _CAIU = False, False
     PONTOS = 0
     """
+
        --- X ---
        1 = Direita
       -1 = Esquerda
+
        --- Y ---
        1 = Baixo
       -1 = Cima
+
     """
     # Gera pra onde a bolinha vai (random e para cima)
     x, y = randrange(-1, 2, 2), -1
@@ -300,6 +276,7 @@ def jogo_principal():
     bolinha = bola(randrange(45, 56), 72)
     # Cria as barras da margem
     self, self2 = margem()
+    self3 = None
     # Variável da lateral da barra
     LATERAL = True
 
@@ -324,6 +301,10 @@ def jogo_principal():
     # Gera o PLACAR
     PLACAR = atualizar_placar()
 
+    # Gera os Cubos se for a fase Extra
+    if EXTRA:
+        self3 = cubos()
+
     # Pressione Enter para iniciar (Obs: aqui é a introdução do jogo, não deveria aparecer que está pausado)
     pausar()
     _COMECOU = True
@@ -332,25 +313,26 @@ def jogo_principal():
     while not ACABOU:
 
         teclas = jogo.checkKey()
+
         p2x = barra.getP2().getX()
         p1x = barra.getP1().getX()
 
         # Barra vai para a direita até o limite da margem
         # 9 = Margem-1 para corrigir quando não bate na parede por conta da velocidade variável
         # To-do (Bug Visual): Dependendo do movimento, fica sobrando ou não 1px
-        if teclas in ('Right', 'D', 'd') and p2x <= RESOLUCAO - 9:
+        if teclas in ('Right', 'D', 'd'):
 
             # Cálculo do movimento da barra
-                if x > 0:
-                    if 5 + x * DIFICULDADE <= RESOLUCAO - 9 - p2x:
-                        barra.move(5 + x * DIFICULDADE, 0)
-                    else:
-                        barra.move(RESOLUCAO - 9 - p2x, 0)
+            if x > 0:
+                if 5 + x * DIFICULDADE <= RESOLUCAO - 9 - p2x:
+                    barra.move(5 + x * DIFICULDADE, 0)
                 else:
-                    if -(-5 + x * DIFICULDADE) <= RESOLUCAO - 9 - p2x:
-                        barra.move(-(-5 + x * DIFICULDADE), 0)
-                    else:
-                        barra.move(RESOLUCAO - 9 - p2x, 0)
+                    barra.move(RESOLUCAO - 9 - p2x, 0)
+            else:
+                if -(-5 + x * DIFICULDADE) <= RESOLUCAO - 9 - p2x:
+                    barra.move(-(-5 + x * DIFICULDADE), 0)
+                else:
+                    barra.move(RESOLUCAO - 9 - p2x, 0)
 
         # Barra vai para a esquerda até o limite da margem
         # 9 = Margem-1 para corrigir quando não bate na parede por conta da velocidade variável
@@ -375,6 +357,8 @@ def jogo_principal():
 
         # Checa se bateu a cada atualização
         x, y = bateu(bolinha, x, y, barra)
+        if EXTRA:
+            x, y = bateu_extra(bolinha, x, y, self3)
         # Cálculo do movimento da bolinha
         bolinha.move(RESOLUCAO * (x / 1000 * DIFICULDADE), RESOLUCAO * (y / 1000 * DIFICULDADE))
         # Debug
@@ -383,11 +367,14 @@ def jogo_principal():
         update(60)
 
     # Limpar tudo ao acabar
+    if EXTRA:
+        limpar(self3)
     lista = (bolinha, PLACAR, self, self2, barra)
     limpar(lista)
-    _COMECOU = False
     # Mostrar o placar final
     resultado()
+    # Retorna as Variáveis Globais
+    _COMECOU, EXTRA = False, False
     # Voltar ao Menu
     menu_principal()
 
@@ -395,10 +382,12 @@ def jogo_principal():
 # Resultado final
 def resultado():
     # Variáveis necessárias
-    global PONTOS, _CAIU
+    global PONTOS, _CAIU, EXTRA
     temp = ['FÁCIL', 'NORMAL', 'DIFÍCIL']
 
-    if _CAIU:
+    if EXTRA and not _CAIU:
+        texto0 = texto_sem_ret(50, 35, False, '>>> PARABÉNS! VOCÊ VENCEU! <<<')
+    elif _CAIU:
         texto0 = texto_sem_ret(50, 35, False, '>>> VOCÊ DEIXOU A BOLINHA CAIR <<<')
     else:
         texto0 = texto_sem_ret(50, 35, False, '>>> VOCÊ FINALIZOU O JOGO <<<')
@@ -496,13 +485,7 @@ def margem():
 
 # Função para checar se bateu
 def bateu(ball, x, y, barra):
-    global ACABOU, DIFICULDADE, PONTOS, PLACAR, LATERAL, _CAIU
-
-    # Fórmula para o raio da circunferência
-    if DIFICULDADE == 3:
-        r = (9 / 500) * RESOLUCAO
-    else:
-        r = RESOLUCAO / 50
+    global ACABOU, DIFICULDADE, PONTOS, PLACAR, LATERAL, _CAIU, EXTRA
 
     # Criação de variáveis repetitivas:
     # BolaX
@@ -519,6 +502,11 @@ def bateu(ball, x, y, barra):
     p2y = barra.getP2().getY()
     # DIFICULDADE
     d = DIFICULDADE * 0.1
+    # Fórmula para o raio da circunferência
+    if DIFICULDADE == 3:
+        r = (9 / 500) * RESOLUCAO
+    else:
+        r = RESOLUCAO / 50
 
     # Verificando o intervalo entre o ponto mais à esquerda da barra e o mais a direita da barra
     # (duas primeiras condições) e as duas últimas condições o intervalo do ponto mais e baixo e mais acima
@@ -534,18 +522,31 @@ def bateu(ball, x, y, barra):
         if p1y == by + r and LATERAL:
             # Aumentar o x, que representa a velocidade da bola para os lados, com base na dificuldade
             if x > 0:
-                x += d
+                if EXTRA:
+                    x += randrange(1, 100) / 100
+                else:
+                    x += d + randrange(1, 100)/100
             else:
-                x -= d
+                if EXTRA:
+                    x -= randrange(1, 100) / 100
+                else:
+                    x -= d + randrange(1, 10)/100
             if y > 0:
-                y += d
+                if EXTRA:
+                    y += randrange(1, 100) / 100
+                else:
+                    y += d + randrange(1, 10)/100
             else:
-                y -= d
+                if EXTRA:
+                    y -= randrange(1, 100) / 100
+                else:
+                    y -= d + randrange(1, 10)/100
             # Inverter a direção da bola para cima, já que ela bateu no topo da barra
             y = -y
             # Incrementar os pontos no placar
-            PONTOS += 1
-            atualizar_placar()
+            if not EXTRA:
+                PONTOS += 1
+                atualizar_placar()
         # Lateral da barra (se bater uma vez já era, não tem como recuperar a bolinha)
         elif LATERAL:
             # Variável para bater apenas uma vez
@@ -556,7 +557,7 @@ def bateu(ball, x, y, barra):
             # Aumentar a velocidade quando bate na lateral (efeito visual)
             x *= 3
 
-    # Lado esquerdo
+            # Lado esquerdo
     if bx < r + 5:
         x = -x
     # Lado superior
@@ -572,17 +573,67 @@ def bateu(ball, x, y, barra):
     return x, y
 
 
+# Função para checar se bateu nos cubos
+def bateu_extra(ball, x, y, lista_cubos):
+
+    # Criação de variáveis repetitivas:
+    # BolaX
+    bx = ball.getCenter().getX()
+    # BolaY
+    by = ball.getCenter().getY()
+    # Fórmula para o raio da circunferência
+    if DIFICULDADE == 3:
+        r = (9 / 500) * RESOLUCAO
+    else:
+        r = RESOLUCAO / 50
+
+    for cubo in lista_cubos:
+        if by <= cubo.getP2().getY() + r and cubo.getP1().getX() <= bx <= cubo.getP2().getX():
+            y = -y
+            bateu_cubo(cubo, lista_cubos)
+        # if bx <= cubo.getP2().getX() + r and cubo.getP1().getY() <= by <= cubo.getP2().getY():
+        #    x = -x
+    return x, y
+
+
+# Comandos repetitivos quando batia no Cubo
+def bateu_cubo(cubo, lista_cubos):
+    global PONTOS
+    PONTOS += 1
+    atualizar_placar()
+    cubo.undraw()
+    lista_cubos.remove(cubo)
+
+
 # Função de Criação e Atualização do Placar
 def atualizar_placar():
-    global PONTOS, PLACAR, FUNDO
+    global PONTOS, PLACAR, FUNDO, EXTRA, ACABOU
     # Não deixa dar undraw caso não exista (0 pts)
     if PONTOS > 0:
         PLACAR.undraw()
+    if PONTOS == 76 and EXTRA:
+        ACABOU = True
     # Fica dando undraw e draw
     PLACAR = texto_sem_ret(50, 90, True, f'PONTUAÇÃO ATUAL: {PONTOS}')
     PLACAR.setTextColor(FUNDO)
     return PLACAR
 
+# Função de Criação dos Cubos
+def cubos():
+    global RESOLUCAO, BOTOES, jogo
+    lista_cubos = []
+    for y in range(2, 20+1, 5):
+        for x in range(2, 96+1, 5):
+            self = Rectangle(Point(RESOLUCAO * (x / 100 + 1 / 100), RESOLUCAO * (y / 100 + 1 / 100)),
+                             Point(RESOLUCAO * (x / 100 + 5 / 100), RESOLUCAO * (y / 100 + 5 / 100)))
+            cor = color_rgb(randrange(0, 256), randrange(0, 256), randrange(0, 256))
+            self.setOutline(cor)
+            self.setFill(cor)
+            self.setWidth(2)
+            self.draw(jogo)
+            lista_cubos.append(self)
+            time.sleep(.01)
+    return lista_cubos
 
 # Menu Principal
 def menu_principal():
@@ -607,7 +658,7 @@ def menu_principal():
     texto1 = texto_ret(op2, 'RESOLUÇÃO')
     texto2 = texto_ret(op3, 'DIFICULDADE')
     texto3 = texto_ret(op4, 'COMO JOGAR')
-    texto4 = texto_ret(op5, 'CRÉDITOS')
+    texto4 = texto_ret(op5, 'FASE EXTRA')
 
     # Enquanto não selecionar nada, continua no Menu
     while not selecionou:
@@ -636,7 +687,8 @@ def menu_principal():
             elif selecionado == 4:
                 selecionou_opcao = menu_comojogar()
             elif selecionado == 5:
-                selecionou_opcao = menu_creditos()
+                selecionou = True
+                menu_extra()
         # ESC
         elif teclas in ('Escape', 'BackSpace'):
             exit()
