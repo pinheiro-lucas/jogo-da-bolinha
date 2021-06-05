@@ -287,15 +287,12 @@ def jogo_principal():
     ACABOU, _CAIU = False, False
     PONTOS = 0
     """
-
        --- X ---
        1 = Direita
       -1 = Esquerda
-
        --- Y ---
        1 = Baixo
       -1 = Cima
-
     """
     # Gera pra onde a bolinha vai (random e para cima)
     x, y = randrange(-1, 2, 2), -1
@@ -335,28 +332,42 @@ def jogo_principal():
     while not ACABOU:
 
         teclas = jogo.checkKey()
+        p2x = barra.getP2().getX()
+        p1x = barra.getP1().getX()
 
         # Barra vai para a direita até o limite da margem
         # 9 = Margem-1 para corrigir quando não bate na parede por conta da velocidade variável
         # To-do (Bug Visual): Dependendo do movimento, fica sobrando ou não 1px
-        if teclas in ('Right', 'D', 'd') and barra.getP2().getX() <= RESOLUCAO - 9:
+        if teclas in ('Right', 'D', 'd') and p2x <= RESOLUCAO - 9:
 
             # Cálculo do movimento da barra
-            if x > 0:
-                barra.move(5 + x * DIFICULDADE, 0)
-            else:
-                barra.move(-(-5 + x * DIFICULDADE), 0)
+                if x > 0:
+                    if 5 + x * DIFICULDADE <= RESOLUCAO - 9 - p2x:
+                        barra.move(5 + x * DIFICULDADE, 0)
+                    else:
+                        barra.move(RESOLUCAO - 9 - p2x, 0)
+                else:
+                    if -(-5 + x * DIFICULDADE) <= RESOLUCAO - 9 - p2x:
+                        barra.move(-(-5 + x * DIFICULDADE), 0)
+                    else:
+                        barra.move(RESOLUCAO - 9 - p2x, 0)
 
         # Barra vai para a esquerda até o limite da margem
         # 9 = Margem-1 para corrigir quando não bate na parede por conta da velocidade variável
         # To-do (Bug Visual): Dependendo do movimento, fica sobrando ou não 1px
-        elif teclas in ('Left', 'A', 'a') and barra.getP1().getX() >= 9:
+        elif teclas in ('Left', 'A', 'a'):
 
             # Cálculo do movimento da barra
             if x > 0:
-                barra.move(-(5 + x * DIFICULDADE), 0)
+                if 5 + x * DIFICULDADE <= p1x - 9:
+                    barra.move(-(5 + x * DIFICULDADE), 0)
+                else:
+                    barra.move(-p1x + 9, 0)
             else:
-                barra.move(-5 + x * DIFICULDADE, 0)
+                if -(-5 + x * DIFICULDADE) <= p1x - 9:
+                    barra.move(-5 + x * DIFICULDADE, 0)
+                else:
+                    barra.move(-p1x + 9, 0)
 
         # Pausa o Jogo
         elif teclas in ('Escape', 'BackSpace'):
@@ -545,7 +556,7 @@ def bateu(ball, x, y, barra):
             # Aumentar a velocidade quando bate na lateral (efeito visual)
             x *= 3
 
-            # Lado esquerdo
+    # Lado esquerdo
     if bx < r + 5:
         x = -x
     # Lado superior
