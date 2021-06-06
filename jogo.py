@@ -593,17 +593,18 @@ def bateu_extra(ball, x, y, lista_cubos):
         c1y = cubo.getP1().getY()
         c2x = cubo.getP2().getX()
         c2y = cubo.getP2().getY()
-        # margem = RESOLUCAO*(1/100)
-        if c1x <= bx + r and bx - r <= c2x and c1y <= by + r and by - r <= c2y:
+        if c1x - r <= bx <= c2x + r and c1y - r <= by <= c2y + r:
             print(f"C1({c1x}, {c1y})")
             print(f"C2({c2x}, {c2y})")
             print(f"B({bx}, {by})")
             print("BATEU")
-            if c2y - 1 <= by - r <= c2y or 1 + c1y >= by + r >= c1y:
+            # Se bateu embaixo ou se bateu em cima
+            if c2y - RESOLUCAO*(1/100) <= by - r <= c2y and y < 0 or RESOLUCAO*(1/100) + c1y >= by + r >= c1y and y > 0:
                 y = -y
                 bateu_cubo(cubo, lista_cubos)
                 bateu = True
-            if c2x - 1 <= bx - r <= c2x or c1x + 1 >= bx + r >= c1x:
+            # Se bateu na direita ou se bateu na esquerda
+            if c2x - RESOLUCAO*(1/100) <= bx - r <= c2x and x < 0 or c1x + RESOLUCAO*(1/100) >= bx + r >= c1x and x > 0:
                 x = -x
                 if not bateu:
                     bateu_cubo(cubo, lista_cubos)
