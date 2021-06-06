@@ -322,12 +322,12 @@ def jogo_principal():
             # Cálculo do movimento da barra
             if x > 0:
                 if 5 + x * DIFICULDADE <= RESOLUCAO - 9 - p2x:
-                    barra.move(5 + x * DIFICULDADE, 0)
+                    barra.move((5 + x * DIFICULDADE)*(RESOLUCAO/500), 0)
                 else:
                     barra.move(RESOLUCAO - 9 - p2x, 0)
             else:
                 if -(-5 + x * DIFICULDADE) <= RESOLUCAO - 9 - p2x:
-                    barra.move(-(-5 + x * DIFICULDADE), 0)
+                    barra.move(-(RESOLUCAO/500)*(-5 + x * DIFICULDADE), 0)
                 else:
                     barra.move(RESOLUCAO - 9 - p2x, 0)
 
@@ -339,14 +339,14 @@ def jogo_principal():
             # Cálculo do movimento da barra
             if x > 0:
                 if 5 + x * DIFICULDADE <= p1x - 9:
-                    barra.move(-(5 + x * DIFICULDADE), 0)
+                    barra.move(-(5 + x * DIFICULDADE)*(RESOLUCAO/500), 0)
                 else:
-                    barra.move(-p1x + 9, 0)
+                    barra.move((-p1x + 9), 0)
             else:
                 if -(-5 + x * DIFICULDADE) <= p1x - 9:
-                    barra.move(-5 + x * DIFICULDADE, 0)
+                    barra.move((-5 + x * DIFICULDADE)*(RESOLUCAO/500), 0)
                 else:
-                    barra.move(-p1x + 9, 0)
+                    barra.move((-p1x + 9), 0)
 
         # Pausa o Jogo
         elif teclas in ('Escape', 'BackSpace'):
