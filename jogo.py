@@ -507,7 +507,7 @@ def bateu(ball, x, y, barra):
 
     # Verificando o intervalo entre o ponto mais à esquerda da barra e o mais a direita da barra
     # (duas primeiras condições) e as duas últimas condições o intervalo do ponto mais e baixo e mais acima
-    if p1x <= bx + r and bx - r <= p2x and p1y <= by + r and by - r <= p2y:
+    if p1x - r <= bx <= p2x + r and p1y - r <= by <= p2y + r:
 
         # Debug
         print(f"P1({p1x}, {p1y})")
@@ -517,12 +517,13 @@ def bateu(ball, x, y, barra):
 
         # Verificando se a bola está no topo da barra
         if p1y == by + r and LATERAL:
-            # Aumentar o x, que representa a velocidade da bola para os lados, com base na dificuldade
             # Randomização do movimento da bola
             x -= XRANDOM
             y -= YRANDOM
             XRANDOM = randrange(1, 10)/100
             YRANDOM = randrange(1, 10)/100
+
+            # Aumentar o x, que representa a velocidade da bola para os lados, com base na dificuldade
             if x > 0:
                 if EXTRA:
                     x += XRANDOM
@@ -543,27 +544,31 @@ def bateu(ball, x, y, barra):
                     y -= YRANDOM
                 else:
                     y -= d + YRANDOM
+
             # Inverter a direção da bola para cima, já que ela bateu no topo da barra
-            y = -y
+            if y > 0:
+                y = -y
+
             # Incrementar os pontos no placar
             if not EXTRA:
                 PONTOS += 1
                 atualizar_placar()
+
         # Lateral da barra (se bater uma vez já era, não tem como recuperar a bolinha)
         elif LATERAL:
-            # Variável para bater apenas uma vez
-            LATERAL = False
             # Inverter a posição na hora da batida dependendo da condição (fixado alguns bugs)
-            if bx - r <= p2x <= bx - r and x < 0 or bx - r <= p1x <= bx + r and x > 0:
+            if p2x + r >= bx >= p2x and x < 0 or p1x - r <= bx <= p1x and x > 0:
                 x = -x
             # Aumentar a velocidade quando bate na lateral (efeito visual)
             x *= 3
+            # Variável para bater apenas uma vez
+            LATERAL = False
 
-    # Lado esquerdo
-    if bx < r + 5 or bx > RESOLUCAO - r - 5:
+    # Lado esquerdo e direito
+    if bx < r + 5 and x < 0 or bx > RESOLUCAO - r - 5 and x > 0:
         x = -x
     # Lado superior
-    if by < r + 5:
+    if by < r + 5 and y < 0:
         y = -y
     # Lado inferior
     if by >= RESOLUCAO - r - 5 - 0.2 * RESOLUCAO:
