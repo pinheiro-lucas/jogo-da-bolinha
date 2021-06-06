@@ -8,7 +8,7 @@ FUNDO, BOTOES = color_rgb(33, 33, 33), color_rgb(163, 103, 127)
 ACABOU, PLACAR, LATERAL, EXTRA = False, None, True, False
 _COMECOU, _CAIU = False, False
 PONTOS = 0
-
+XRANDOM, YRANDOM = 0, 0
 
 # Cria o Menu Principal
 jogo = GraphWin('Jogo da Bolinha', RESOLUCAO, RESOLUCAO, autoflush=False)
@@ -260,15 +260,12 @@ def jogo_principal():
     ACABOU, _CAIU = False, False
     PONTOS = 0
     """
-
        --- X ---
        1 = Direita
       -1 = Esquerda
-
        --- Y ---
        1 = Baixo
       -1 = Cima
-
     """
     # Gera pra onde a bolinha vai (random e para cima)
     x, y = randrange(-1, 2, 2), -1
@@ -485,7 +482,7 @@ def margem():
 
 # Função para checar se bateu
 def bateu(ball, x, y, barra):
-    global ACABOU, DIFICULDADE, PONTOS, PLACAR, LATERAL, _CAIU, EXTRA
+    global ACABOU, DIFICULDADE, PONTOS, PLACAR, LATERAL, _CAIU, EXTRA, XRANDOM, YRANDOM
 
     # Criação de variáveis repetitivas:
     # BolaX
@@ -521,26 +518,31 @@ def bateu(ball, x, y, barra):
         # Verificando se a bola está no topo da barra
         if p1y == by + r and LATERAL:
             # Aumentar o x, que representa a velocidade da bola para os lados, com base na dificuldade
+            # Randomização do movimento da bola
+            x -= XRANDOM
+            y -= YRANDOM
+            XRANDOM = randrange(1, 10)/100
+            YRANDOM = randrange(1, 10)/100
             if x > 0:
                 if EXTRA:
-                    x += randrange(1, 100) / 100
+                    x += XRANDOM
                 else:
-                    x += d + randrange(1, 100)/100
+                    x += d + XRANDOM
             else:
                 if EXTRA:
-                    x -= randrange(1, 100) / 100
+                    x -= XRANDOM
                 else:
-                    x -= d + randrange(1, 10)/100
+                    x -= d + XRANDOM
             if y > 0:
                 if EXTRA:
-                    y += randrange(1, 100) / 100
+                    y += YRANDOM
                 else:
-                    y += d + randrange(1, 10)/100
+                    y += d + YRANDOM
             else:
                 if EXTRA:
-                    y -= randrange(1, 100) / 100
+                    y -= YRANDOM
                 else:
-                    y -= d + randrange(1, 10)/100
+                    y -= d + YRANDOM
             # Inverter a direção da bola para cima, já que ela bateu no topo da barra
             y = -y
             # Incrementar os pontos no placar
@@ -557,15 +559,12 @@ def bateu(ball, x, y, barra):
             # Aumentar a velocidade quando bate na lateral (efeito visual)
             x *= 3
 
-            # Lado esquerdo
-    if bx < r + 5:
+    # Lado esquerdo
+    if bx < r + 5 or bx > RESOLUCAO - r - 5:
         x = -x
     # Lado superior
     if by < r + 5:
         y = -y
-    # Lado direito
-    if bx > RESOLUCAO - r - 5:
-        x = -x
     # Lado inferior
     if by >= RESOLUCAO - r - 5 - 0.2 * RESOLUCAO:
         ACABOU, _CAIU = True, True
@@ -588,11 +587,26 @@ def bateu_extra(ball, x, y, lista_cubos):
         r = RESOLUCAO / 50
 
     for cubo in lista_cubos:
-        if by <= cubo.getP2().getY() + r and cubo.getP1().getX() <= bx <= cubo.getP2().getX():
-            y = -y
-            bateu_cubo(cubo, lista_cubos)
-        # if bx <= cubo.getP2().getX() + r and cubo.getP1().getY() <= by <= cubo.getP2().getY():
-        #    x = -x
+        # Pontos do cubo
+        bateu = False
+        c1x = cubo.getP1().getX()
+        c1y = cubo.getP1().getY()
+        c2x = cubo.getP2().getX()
+        c2y = cubo.getP2().getY()
+        # margem = RESOLUCAO*(1/100)
+        if c1x <= bx + r and bx - r <= c2x and c1y <= by + r and by - r <= c2y:
+            print(f"C1({c1x}, {c1y})")
+            print(f"C2({c2x}, {c2y})")
+            print(f"B({bx}, {by})")
+            print("BATEU")
+            if c2y - 1 <= by - r <= c2y or 1 + c1y >= by + r >= c1y:
+                y = -y
+                bateu_cubo(cubo, lista_cubos)
+                bateu = True
+            if c2x - 1 <= bx - r <= c2x or c1x + 1 >= bx + r >= c1x:
+                x = -x
+                if not bateu:
+                    bateu_cubo(cubo, lista_cubos)
     return x, y
 
 
