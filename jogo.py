@@ -648,6 +648,7 @@ def cubos():
             self.setWidth(2)
             self.draw(jogo)
             lista_cubos.append(self)
+            time.sleep(0.01)
     return lista_cubos
 
 def objetos_menu_principal(lista):
