@@ -215,15 +215,14 @@ def menu_comojogar():
 
     texto1 = texto_ret(op1, '< Voltar')
 
-    texto2 = texto_sem_ret(50, 10, True, 'COMO JOGAR:')
-    texto3 = texto_sem_ret(50, 20, False, 'Você tem três vidas')
-    texto4 = texto_sem_ret(50, 25, False, 'Não deixe a bolinha cair')
-    texto5 = texto_sem_ret(50, 30, False, 'A velocidade aumenta conforme o tempo')
-    texto6 = texto_sem_ret(50, 35, False, 'Utilize as setinhas para controlar a barra')
-    texto7 = texto_sem_ret(50, 40, False, 'Recupere a vida coletando os corações')
-    texto8 = texto_sem_ret(50, 45, False, 'Aproveite os modos mais desafiadores')
+    texto2 = texto_sem_ret(50, 15, True, 'COMO JOGAR:')
+    texto3 = texto_sem_ret(50, 35, False, 'Não deixe a bolinha cair')
+    texto4 = texto_sem_ret(50, 40, False, 'A velocidade aumenta conforme o tempo')
+    texto5 = texto_sem_ret(50, 45, False, 'Utilize as setinhas para controlar a barra')
+    texto6 = texto_sem_ret(50, 50, False, 'Aproveite as dificuldades mais desafiadoras')
+    texto7 = texto_sem_ret(50, 55, False, 'Aproveite também o modo extra')
 
-    lista = (op1, texto1, texto2, texto3, texto4, texto5, texto6, texto7, texto8)
+    lista = (op1, texto1, texto2, texto3, texto4, texto5, texto6, texto7)
 
     while not selecionou:
         teclas = jogo.checkKey()
@@ -382,7 +381,7 @@ def resultado():
     global PONTOS, _CAIU, EXTRA
     temp = ['FÁCIL', 'NORMAL', 'DIFÍCIL']
 
-    if EXTRA and not _CAIU:
+    if EXTRA and not _CAIU and PONTOS == 76:
         texto0 = texto_sem_ret(50, 35, False, '>>> PARABÉNS! VOCÊ VENCEU! <<<')
     elif _CAIU:
         texto0 = texto_sem_ret(50, 35, False, '>>> VOCÊ DEIXOU A BOLINHA CAIR <<<')
@@ -439,10 +438,16 @@ def pausar():
 # Confirmar ao voltar p/ o Menu
 def confirmar():
     # Variáveis necessárias
-    texto0 = texto_sem_ret(50, 30, True, '>> Você perderá seu progresso <<')
-    texto1 = texto_sem_ret(50, 40, True, '[ENTER] Confirmar')
-    texto2 = texto_sem_ret(50, 50, True, '[ESC] Voltar')
-    global ACABOU
+    global ACABOU, RESOLUCAO
+    # Se o cliente estiver em uma calculadora
+    if RESOLUCAO == 250:
+        menor = False
+    else:
+        menor = True
+    texto0 = texto_sem_ret(50, 30, menor, '>> Você perderá seu progresso <<')
+    texto1 = texto_sem_ret(50, 40, menor, '[ENTER] Confirmar')
+    texto2 = texto_sem_ret(50, 50, menor, '[ESC] Voltar')
+
     confirma = True
 
     while confirma:
@@ -593,12 +598,16 @@ def bateu_extra(ball, x, y, lista_cubos):
 
     for cubo in lista_cubos:
         # Pontos do cubo
-        bateu = False
+        bateu_no_cubo = False
+
+        # Criação de variáveis repetitivas:
         c1x = cubo.getP1().getX()
         c1y = cubo.getP1().getY()
         c2x = cubo.getP2().getX()
         c2y = cubo.getP2().getY()
+
         if c1x - r <= bx <= c2x + r and c1y - r <= by <= c2y + r:
+            # Debug
             print(f"C1({c1x}, {c1y})")
             print(f"C2({c2x}, {c2y})")
             print(f"B({bx}, {by})")
@@ -607,11 +616,11 @@ def bateu_extra(ball, x, y, lista_cubos):
             if c2y - RESOLUCAO*(1/100) <= by - r <= c2y and y < 0 or RESOLUCAO*(1/100) + c1y >= by + r >= c1y and y > 0:
                 y = -y
                 bateu_cubo(cubo, lista_cubos)
-                bateu = True
+                bateu_no_cubo = True
             # Se bateu na direita ou se bateu na esquerda
             if c2x - RESOLUCAO*(1/100) <= bx - r <= c2x and x < 0 or c1x + RESOLUCAO*(1/100) >= bx + r >= c1x and x > 0:
                 x = -x
-                if not bateu:
+                if not bateu_no_cubo:
                     bateu_cubo(cubo, lista_cubos)
     return x, y
 
@@ -641,6 +650,8 @@ def atualizar_placar():
 # Função de Criação dos Cubos
 def cubos():
     global RESOLUCAO, BOTOES, jogo
+
+    # Armazena todos os cubos na lista
     lista_cubos = []
     for y in range(2, 20+1, 5):
         for x in range(2, 96+1, 5):
@@ -722,5 +733,9 @@ def menu_principal():
         resetar_outline(listaop, selecionado)
 
 
-# Abre o Menu/Start
-menu_principal()
+# Inicia o Jogo
+try:
+    menu_principal()
+# Se a aba for fechada, o jogo finaliza
+except GraphicsError:
+    exit()
