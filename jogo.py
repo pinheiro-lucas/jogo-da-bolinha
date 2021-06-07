@@ -115,19 +115,20 @@ def menu_resolucao():
     global RESOLUCAO, JOGO, FUNDO
     selecionou, selecionado = False, 1
 
-    op1 = retangulo(5, 15, 95, 5)
-    op2 = retangulo(5, 30, 95, 20)
-    op3 = retangulo(5, 45, 95, 35)
-    op4 = retangulo(5, 60, 95, 50)
+    op1 = retangulo(5, 35, 95, 25)
+    op2 = retangulo(5, 50, 95, 40)
+    op3 = retangulo(5, 65, 95, 55)
+    op4 = retangulo(5, 80, 95, 70)
     op5 = retangulo(5, 95, 95, 85)
 
+    texto0 = texto_sem_ret(50, 12, True, f'Selecione uma resolução:\n(Atual: {RESOLUCAO})')
     texto1 = texto_ret(op1, '250x250')
     texto2 = texto_ret(op2, '500x500')
     texto3 = texto_ret(op3, '750x750')
     texto4 = texto_ret(op4, '1000x1000')
     texto5 = texto_ret(op5, '< Voltar')
 
-    lista = (op1, op2, op3, op4, op5, texto1, texto2, texto3, texto4, texto5)
+    lista = (op1, op2, op3, op4, op5, texto0, texto1, texto2, texto3, texto4, texto5)
 
     while not selecionou:
         teclas = JOGO.checkKey()
@@ -142,12 +143,23 @@ def menu_resolucao():
                 selecionado += 1
         # Ao selecionar
         elif teclas in ('Return', 'space'):
-            if selecionado != 5:
-                opcoes = (250, 500, 750, 1000)
+            opcoes = (250, 500, 750, 1000)
+            if selecionado != 5 and opcoes[selecionado - 1] != RESOLUCAO:
                 RESOLUCAO = opcoes[selecionado - 1]
                 mudar_resolucao()
             limpar(lista)
+            if not MUDOU_RESOLUCAO:
+                if RESOLUCAO == 250:
+                    maior = False
+                else:
+                    maior = True
+                msg = texto_sem_ret(50, 50, maior, "Você selecionou a mesma resolução")
+                teclas = None
+                while teclas not in ('Return', 'space', 'Escape', 'BackSpace'):
+                    teclas = JOGO.checkKey()
+                msg.undraw()
             return True
+
         # ESC
         elif teclas in ('Escape', 'BackSpace'):
             limpar(lista)
