@@ -9,6 +9,7 @@ ACABOU, PLACAR, LATERAL, EXTRA = False, None, True, False
 _COMECOU, _CAIU = False, False
 PONTOS = 0
 XRANDOM, YRANDOM = 0, 0
+MUDOU_RESOLUCAO = False
 
 # Cria o Menu Principal
 jogo = GraphWin('Jogo da Bolinha', RESOLUCAO, RESOLUCAO, autoflush=False)
@@ -96,10 +97,11 @@ def criar_barra(x1, y1, x2, y2):
 
 # Função para Mudar a Resolução
 def mudar_resolucao():
-    global jogo, RESOLUCAO, FUNDO
+    global jogo, RESOLUCAO, FUNDO, MUDOU_RESOLUCAO
     jogo.close()
     jogo = GraphWin('Menu do Jogo', RESOLUCAO, RESOLUCAO)
     jogo.setBackground(FUNDO)
+    MUDOU_RESOLUCAO = True
 
 
 # Função de limpar o Menu
@@ -149,7 +151,7 @@ def menu_resolucao():
         # ESC
         elif teclas in ('Escape', 'BackSpace'):
             limpar(lista)
-            menu_principal()
+            return True
 
         # Função para checagem do selecionado
         listaop = (op1, op2, op3, op4, op5)
@@ -199,7 +201,7 @@ def menu_dificuldade():
         elif teclas in ('Escape', 'BackSpace'):
             # Volta para o Menu Principal
             limpar(lista)
-            menu_principal()
+            return True
 
         # Função para checagem do selecionado
         listaop = (op1, op2, op3, op4)
@@ -227,32 +229,20 @@ def menu_comojogar():
     while not selecionou:
         teclas = jogo.checkKey()
 
-        # Enter
-        if teclas in ('Return', 'space'):
+        # Enter ou esc faz a mesma coisa
+        if teclas in ('Return', 'space', 'Escape', 'BackSpace'):
             limpar(lista)
             return True
-        # ESC
-        elif teclas in ('Escape', 'BackSpace'):
-            limpar(lista)
-            menu_principal()
 
         # Função para checagem do selecionado
-        listaop = [op1]
+        listaop = op1,
         resetar_outline(listaop, selecionado)
-
-
-# Sub-Menu da Fase Extra
-def menu_extra():
-    global EXTRA
-    EXTRA = True
-    jogo_principal()
-
 
 # Jogo Principal
 def jogo_principal():
     global RESOLUCAO, FUNDO, jogo, ACABOU, PONTOS, PLACAR, LATERAL, DIFICULDADE, _CAIU, _COMECOU, EXTRA
 
-    # Ativa o 'autoflush' para a gente manipular quadros
+    # Ativa o 'autoflush' para a manipulação dos quadros
     jogo.autoflush = True
 
     # Variáveis necessárias
@@ -301,7 +291,7 @@ def jogo_principal():
     if EXTRA:
         self3 = cubos()
 
-    # Pressione Enter para iniciar (Obs: aqui é a introdução do jogo, não deveria aparecer que está pausado)
+    # Pressione Enter para iniciar
     pausar()
     _COMECOU = True
 
@@ -372,14 +362,14 @@ def jogo_principal():
     # Retorna as Variáveis Globais
     _COMECOU, EXTRA = False, False
     # Voltar ao Menu
-    menu_principal()
+    return True
 
 
 # Resultado final
 def resultado():
     # Variáveis necessárias
     global PONTOS, _CAIU, EXTRA
-    temp = ['FÁCIL', 'NORMAL', 'DIFÍCIL']
+    dificuldades_string = 'FÁCIL', 'NORMAL', 'DIFÍCIL'
 
     if EXTRA and not _CAIU and PONTOS == 76:
         texto0 = texto_sem_ret(50, 35, False, '>>> PARABÉNS! VOCÊ VENCEU! <<<')
@@ -388,7 +378,7 @@ def resultado():
     else:
         texto0 = texto_sem_ret(50, 35, False, '>>> VOCÊ FINALIZOU O JOGO <<<')
     texto1 = texto_sem_ret(50, 45, False, f'PONTUAÇÃO FINAL: {PONTOS}')
-    texto2 = texto_sem_ret(50, 55, False, f'DIFICULDADE: {temp[DIFICULDADE-1]}')
+    texto2 = texto_sem_ret(50, 55, False, f'DIFICULDADE: {dificuldades_string[DIFICULDADE-1]}')
     texto3 = texto_sem_ret(50, 65, False, '[ESC] Menu')
 
     voltar = False
@@ -415,8 +405,10 @@ def pausar():
     texto1 = texto_sem_ret(50, 40, True, '[ENTER] Jogar')
     texto2 = texto_sem_ret(50, 50, True, '[ESC] Menu')
 
-    pausa = True
+    pausa, selecionou_opcao = True, False
 
+    # Salvar os objetos do menu pausar para quando alguém selecionar uma opção
+    objetos_do_pausar = texto0, texto1, texto2
     while pausa:
 
         teclas = jogo.checkKey()
@@ -431,8 +423,13 @@ def pausar():
         elif teclas in ('Escape', 'BackSpace'):
             texto = (texto0, texto1, texto2)
             limpar(texto)
-            pausa = False
-            confirmar()
+            pausa = confirmar()
+            selecionou_opcao = True
+
+        if selecionou_opcao and pausa:
+            selecionou_opcao = False
+            for objeto in objetos_do_pausar:
+                objeto.draw(jogo)
 
 
 # Confirmar ao voltar p/ o Menu
@@ -459,13 +456,14 @@ def confirmar():
             texto = (texto0, texto1, texto2)
             limpar(texto)
             confirma, ACABOU = False, True
+            return False
 
         # Acabar ao clicar ESC
         elif teclas in ('Escape', 'BackSpace'):
             texto = (texto0, texto1, texto2)
             limpar(texto)
             confirma = False
-            pausar()
+            return True
 
 
 # Função de criação da Margem
@@ -663,12 +661,15 @@ def cubos():
             self.setWidth(2)
             self.draw(jogo)
             lista_cubos.append(self)
-            time.sleep(.01)
     return lista_cubos
+
+def objetos_menu_principal(lista):
+    for objeto in lista:
+        objeto.draw(jogo)
 
 # Menu Principal
 def menu_principal():
-    global FUNDO, RESOLUCAO, jogo
+    global FUNDO, RESOLUCAO, jogo, MUDOU_RESOLUCAO, EXTRA
 
     # Variáveis necessárias
     selecionado = 1
@@ -691,6 +692,9 @@ def menu_principal():
     texto3 = texto_ret(op4, 'COMO JOGAR')
     texto4 = texto_ret(op5, 'FASE EXTRA')
 
+    # Salvá-los para quando o usuário retornar ao menu principal, eles serem mostrados novamente
+    lista_dos_objetos = op1, op2, op3, op4, op5, texto0, texto5, texto1, texto2, texto3, texto4
+
     # Enquanto não selecionar nada, continua no Menu
     while not selecionou:
 
@@ -710,7 +714,7 @@ def menu_principal():
             limpar(lista)
             if selecionado == 1:
                 selecionou = True
-                jogo_principal()
+                selecionou_opcao = jogo_principal()
             elif selecionado == 2:
                 selecionou_opcao = menu_resolucao()
             elif selecionado == 3:
@@ -719,23 +723,40 @@ def menu_principal():
                 selecionou_opcao = menu_comojogar()
             elif selecionado == 5:
                 selecionou = True
-                menu_extra()
+                EXTRA = True
+                selecionou_opcao = jogo_principal()
+
         # ESC
         elif teclas in ('Escape', 'BackSpace'):
             exit()
 
         # Função para checagem do selecionado
-        if selecionou_opcao:
-            selecionou_opcao = False
-            menu_principal()
+        if selecionou_opcao and not MUDOU_RESOLUCAO:
+            # Mostrar novamente os objetos após o retorno do usuário
+            selecionou, selecionou_opcao = False, False
+            jogo.autoflush = False
+            objetos_menu_principal(lista_dos_objetos)
+        elif selecionou_opcao:
+            # Trocar as dimensões dos objetos do menu principal após a mudança de resolução
+            selecionou, selecionou_opcao, MUDOU_RESOLUCAO = False, False, False
+            jogo.autoflush = False
+            op1 = retangulo(5, 35, 95, 20)
+            op2 = retangulo(5, 50, 95, 40)
+            op3 = retangulo(5, 65, 95, 55)
+            op4 = retangulo(5, 80, 95, 70)
+            op5 = retangulo(5, 95, 95, 85)
+            texto0 = texto_sem_ret(50, 10, True, 'MENU PRINCIPAL')
+            texto5 = texto_ret(op1, 'JOGAR')
+            texto1 = texto_ret(op2, 'RESOLUÇÃO')
+            texto2 = texto_ret(op3, 'DIFICULDADE')
+            texto3 = texto_ret(op4, 'COMO JOGAR')
+            texto4 = texto_ret(op5, 'FASE EXTRA')
+            # Atualizar a lista dos objetos com as dimensões corretas
+            lista_dos_objetos = op1, op2, op3, op4, op5, texto0, texto5, texto1, texto2, texto3, texto4
 
         listaop = (op1, op2, op3, op4, op5)
         resetar_outline(listaop, selecionado)
 
 
 # Inicia o Jogo
-try:
-    menu_principal()
-# Se a aba for fechada, o jogo finaliza
-except GraphicsError:
-    exit()
+menu_principal()
