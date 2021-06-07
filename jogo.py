@@ -751,4 +751,3 @@ try:
 # Se a aba for fechada, o jogo finaliza
 except GraphicsError:
     exit()
-menu_principal()
