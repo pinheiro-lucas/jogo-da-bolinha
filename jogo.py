@@ -347,8 +347,6 @@ def jogo_principal():
             x, y = bateu_extra(bolinha, x, y, self3)
         # Cálculo do movimento da bolinha
         bolinha.move(RESOLUCAO * (x / 1000 * DIFICULDADE), RESOLUCAO * (y / 1000 * DIFICULDADE))
-        # Debug
-        # print(RESOLUCAO*(x/1000*DIFICULDADE), RESOLUCAO*(y/1000*DIFICULDADE))
         # Taxa de atualização (60hz)
         update(60)
 
@@ -512,12 +510,6 @@ def bateu(ball, x, y, barra):
     # (duas primeiras condições) e as duas últimas condições o intervalo do ponto mais e baixo e mais acima
     if p1x - r <= bx <= p2x + r and p1y - r <= by <= p2y + r:
 
-        # Debug
-        print(f"P1({p1x}, {p1y})")
-        print(f"P2({p2x}, {p2y})")
-        print(f"B({bx}, {by})")
-        print("BATEU")
-
         # Verificando se a bola está no topo da barra
         if p1y == by + r and LATERAL:
             # Randomização do movimento da bola
@@ -605,11 +597,6 @@ def bateu_extra(ball, x, y, lista_cubos):
         c2y = cubo.getP2().getY()
 
         if c1x - r <= bx <= c2x + r and c1y - r <= by <= c2y + r:
-            # Debug
-            print(f"C1({c1x}, {c1y})")
-            print(f"C2({c2x}, {c2y})")
-            print(f"B({bx}, {by})")
-            print("BATEU")
             # Se bateu embaixo ou se bateu em cima
             if c2y - RESOLUCAO*(1/100) <= by - r <= c2y and y < 0 or RESOLUCAO*(1/100) + c1y >= by + r >= c1y and y > 0:
                 y = -y
@@ -759,4 +746,9 @@ def menu_principal():
 
 
 # Inicia o Jogo
+try:
+    menu_principal()
+# Se a aba for fechada, o jogo finaliza
+except GraphicsError:
+    exit()
 menu_principal()
