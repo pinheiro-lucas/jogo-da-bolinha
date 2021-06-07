@@ -12,8 +12,8 @@ XRANDOM, YRANDOM = 0, 0
 MUDOU_RESOLUCAO = False
 
 # Cria o Menu Principal
-jogo = GraphWin('Jogo da Bolinha', RESOLUCAO, RESOLUCAO, autoflush=False)
-jogo.setBackground(FUNDO)
+JOGO = GraphWin('Jogo da Bolinha', RESOLUCAO, RESOLUCAO, autoflush=False)
+JOGO.setBackground(FUNDO)
 
 
 # Animação de seleção
@@ -28,31 +28,31 @@ def resetar_outline(listaop, s):
 
 # Função do Retângulo
 def retangulo(x1, y1, x2, y2):
-    global BOTOES, RESOLUCAO, jogo
+    global BOTOES, RESOLUCAO, JOGO
     self = Rectangle(Point(RESOLUCAO * (x1 / 100), RESOLUCAO * (y1 / 100)),
                      Point(RESOLUCAO * (x2 / 100), RESOLUCAO * (y2 / 100)))
     self.setWidth(3)
     self.setFill(BOTOES)
-    self.draw(jogo)
+    self.draw(JOGO)
     return self
 
 
 # Função do Texto
 def texto_ret(ret, msg):
-    global FUNDO, RESOLUCAO, jogo
+    global FUNDO, RESOLUCAO, JOGO
     self = Text(ret.getCenter(), msg)
     self.setTextColor(FUNDO)
     self.setStyle('bold')
     self.setFace('times roman')
     tamanho_normal = {250: 10, 500: 15, 750: 20, 1000: 25}
     self.setSize(tamanho_normal[RESOLUCAO])
-    self.draw(jogo)
+    self.draw(JOGO)
     return self
 
 
 # Função de Texto sem Retângulo
 def texto_sem_ret(x, y, t, msg):
-    global BOTOES, RESOLUCAO, jogo
+    global BOTOES, RESOLUCAO, JOGO
     self = Text(Point(RESOLUCAO * (x / 100), RESOLUCAO * (y / 100)), msg)
     self.setStyle('bold')
     self.setTextColor(BOTOES)
@@ -60,17 +60,17 @@ def texto_sem_ret(x, y, t, msg):
     if t:
         tamanho_maior = {250: 15, 500: 20, 750: 25, 1000: 30}
         self.setSize(tamanho_maior[RESOLUCAO])
-        self.draw(jogo)
+        self.draw(JOGO)
         return self
     tamanho_normal = {250: 10, 500: 15, 750: 20, 1000: 25}
     self.setSize(tamanho_normal[RESOLUCAO])
-    self.draw(jogo)
+    self.draw(JOGO)
     return self
 
 
 # Função da Bolinha
 def bola(x, y):
-    global jogo, RESOLUCAO, BOTOES
+    global JOGO, RESOLUCAO, BOTOES
     # Fórmula para o raio da circunferência
     if DIFICULDADE == 3:
         r = (9 / 500) * RESOLUCAO
@@ -79,28 +79,28 @@ def bola(x, y):
     self = Circle(Point(RESOLUCAO * (x / 100), RESOLUCAO * (y / 100)), r)
     self.setFill(BOTOES)
     # self.setOutline('white')
-    self.draw(jogo)
+    self.draw(JOGO)
     return self
 
 
 # Função de Criar a Barrinha
 def criar_barra(x1, y1, x2, y2):
-    global BOTOES, RESOLUCAO, jogo
+    global BOTOES, RESOLUCAO, JOGO
     self = Rectangle(Point(RESOLUCAO * (x1 / 100), RESOLUCAO * (y1 / 100)),
                      Point(RESOLUCAO * (x2 / 100), RESOLUCAO * (y2 / 100)))
     self.setFill(BOTOES)
     self.setWidth(2)
     self.setOutline(BOTOES)
-    self.draw(jogo)
+    self.draw(JOGO)
     return self
 
 
 # Função para Mudar a Resolução
 def mudar_resolucao():
-    global jogo, RESOLUCAO, FUNDO, MUDOU_RESOLUCAO
-    jogo.close()
-    jogo = GraphWin('Menu do Jogo', RESOLUCAO, RESOLUCAO)
-    jogo.setBackground(FUNDO)
+    global JOGO, RESOLUCAO, FUNDO, MUDOU_RESOLUCAO
+    JOGO.close()
+    JOGO = GraphWin('Menu do Jogo', RESOLUCAO, RESOLUCAO)
+    JOGO.setBackground(FUNDO)
     MUDOU_RESOLUCAO = True
 
 
@@ -112,7 +112,7 @@ def limpar(lista):
 
 # Sub-Menu de Resolução
 def menu_resolucao():
-    global RESOLUCAO, jogo, FUNDO
+    global RESOLUCAO, JOGO, FUNDO
     selecionou, selecionado = False, 1
 
     op1 = retangulo(5, 15, 95, 5)
@@ -130,7 +130,7 @@ def menu_resolucao():
     lista = (op1, op2, op3, op4, op5, texto1, texto2, texto3, texto4, texto5)
 
     while not selecionou:
-        teclas = jogo.checkKey()
+        teclas = JOGO.checkKey()
 
         # Seleciona p/ cima
         if teclas in ('Up', 'W', 'w'):
@@ -179,7 +179,7 @@ def menu_dificuldade():
     lista = (op1, op2, op3, op4, texto1, texto2, texto3, texto4, texto5)
 
     while not selecionou:
-        teclas = jogo.checkKey()
+        teclas = JOGO.checkKey()
 
         # Seleciona p/ cima
         if teclas in ('Up', 'W', 'w'):
@@ -227,7 +227,7 @@ def menu_comojogar():
     lista = (op1, texto1, texto2, texto3, texto4, texto5, texto6, texto7)
 
     while not selecionou:
-        teclas = jogo.checkKey()
+        teclas = JOGO.checkKey()
 
         # Enter ou esc faz a mesma coisa
         if teclas in ('Return', 'space', 'Escape', 'BackSpace'):
@@ -240,10 +240,10 @@ def menu_comojogar():
 
 # Jogo Principal
 def jogo_principal():
-    global RESOLUCAO, FUNDO, jogo, ACABOU, PONTOS, PLACAR, LATERAL, DIFICULDADE, _CAIU, _COMECOU, EXTRA
+    global RESOLUCAO, FUNDO, JOGO, ACABOU, PONTOS, PLACAR, LATERAL, DIFICULDADE, _CAIU, _COMECOU, EXTRA
 
     # Ativa o 'autoflush' para a manipulação dos quadros
-    jogo.autoflush = True
+    JOGO.autoflush = True
 
     # Variáveis necessárias
     ACABOU, _CAIU = False, False
@@ -298,7 +298,7 @@ def jogo_principal():
     # Núcleo do Jogo
     while not ACABOU:
 
-        teclas = jogo.checkKey()
+        teclas = JOGO.checkKey()
 
         p2x = barra.getP2().getX()
         p1x = barra.getP1().getX()
@@ -383,7 +383,7 @@ def resultado():
 
     while not voltar:
 
-        teclas = jogo.checkKey()
+        teclas = JOGO.checkKey()
 
         # Retornar ao Menu
         if teclas in ('Return', 'space', 'Escape', 'BackSpace'):
@@ -409,7 +409,7 @@ def pausar():
     objetos_do_pausar = texto0, texto1, texto2
     while pausa:
 
-        teclas = jogo.checkKey()
+        teclas = JOGO.checkKey()
 
         # Retornar ao clicar Enter
         if teclas in ('Return', 'space'):
@@ -427,7 +427,7 @@ def pausar():
         if selecionou_opcao and pausa:
             selecionou_opcao = False
             for objeto in objetos_do_pausar:
-                objeto.draw(jogo)
+                objeto.draw(JOGO)
 
 
 # Confirmar ao voltar p/ o Menu
@@ -447,7 +447,7 @@ def confirmar():
 
     while confirma:
 
-        teclas = jogo.checkKey()
+        teclas = JOGO.checkKey()
 
         # Retornar ao clicar Enter
         if teclas in ('Return', 'space'):
@@ -471,13 +471,13 @@ def margem():
     self = Rectangle(Point(1, 1), Point(RESOLUCAO - 1, RESOLUCAO * (80 / 100)))
     self.setOutline(BOTOES)
     self.setWidth(10)
-    self.draw(jogo)
+    self.draw(JOGO)
     # Deletar a parte de baixo
     self2 = Rectangle(Point(0, RESOLUCAO * (80 / 100)), Point(RESOLUCAO - 1, RESOLUCAO - 1))
     self2.setOutline(BOTOES)
     self2.setWidth(10)
     self2.setFill(BOTOES)
-    self2.draw(jogo)
+    self2.draw(JOGO)
     return self, self2
 
 
@@ -634,7 +634,7 @@ def atualizar_placar():
 
 # Função de Criação dos Cubos
 def cubos():
-    global RESOLUCAO, BOTOES, jogo
+    global RESOLUCAO, BOTOES, JOGO
 
     # Armazena todos os cubos na lista
     lista_cubos = []
@@ -646,25 +646,25 @@ def cubos():
             self.setOutline(cor)
             self.setFill(cor)
             self.setWidth(2)
-            self.draw(jogo)
+            self.draw(JOGO)
             lista_cubos.append(self)
             time.sleep(0.01)
     return lista_cubos
 
 def objetos_menu_principal(lista):
     for objeto in lista:
-        objeto.draw(jogo)
+        objeto.draw(JOGO)
 
 # Menu Principal
 def menu_principal():
-    global FUNDO, RESOLUCAO, jogo, MUDOU_RESOLUCAO, EXTRA
+    global FUNDO, RESOLUCAO, JOGO, MUDOU_RESOLUCAO, EXTRA
 
     # Variáveis necessárias
     selecionado = 1
     selecionou, selecionou_opcao = False, False
 
     # Desativa o 'autoflush' caso o jogador venha do Jogo
-    jogo.autoflush = False
+    JOGO.autoflush = False
 
     op1 = retangulo(5, 35, 95, 20)
     op2 = retangulo(5, 50, 95, 40)
@@ -686,7 +686,7 @@ def menu_principal():
     # Enquanto não selecionar nada, continua no Menu
     while not selecionou:
 
-        teclas = jogo.checkKey()
+        teclas = JOGO.checkKey()
 
         # Seleciona p/ cima
         if teclas in ('Up', 'W', 'w'):
@@ -722,12 +722,12 @@ def menu_principal():
         if selecionou_opcao and not MUDOU_RESOLUCAO:
             # Mostrar novamente os objetos após o retorno do usuário
             selecionou, selecionou_opcao = False, False
-            jogo.autoflush = False
+            JOGO.autoflush = False
             objetos_menu_principal(lista_dos_objetos)
         elif selecionou_opcao:
             # Trocar as dimensões dos objetos do menu principal após a mudança de resolução
             selecionou, selecionou_opcao, MUDOU_RESOLUCAO = False, False, False
-            jogo.autoflush = False
+            JOGO.autoflush = False
             op1 = retangulo(5, 35, 95, 20)
             op2 = retangulo(5, 50, 95, 40)
             op3 = retangulo(5, 65, 95, 55)
