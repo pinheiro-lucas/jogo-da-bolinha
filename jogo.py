@@ -2,14 +2,15 @@ from graphics import *
 from random import randrange
 import time
 
+
 # Variáveis Globais
 RESOLUCAO, DIFICULDADE = 500, 2
 FUNDO, BOTOES = color_rgb(33, 33, 33), color_rgb(163, 103, 127)
 ACABOU, PLACAR, LATERAL, EXTRA = False, None, True, False
 _COMECOU, _CAIU = False, False
-PONTOS = 0
-XRANDOM, YRANDOM = 0, 0
+XRANDOM, YRANDOM, PONTOS = 0, 0, 0
 MUDOU_RESOLUCAO = False
+RECORD = None
 
 # Cria o Menu Principal
 JOGO = GraphWin('Jogo da Bolinha', RESOLUCAO, RESOLUCAO, autoflush=False)
@@ -57,6 +58,7 @@ def texto_sem_ret(x, y, t, msg):
     self.setStyle('bold')
     self.setTextColor(BOTOES)
     self.setFace('times roman')
+    # Tamanho maior ou menor
     if t:
         tamanho_maior = {250: 15, 500: 20, 750: 25, 1000: 30}
         self.setSize(tamanho_maior[RESOLUCAO])
@@ -78,7 +80,6 @@ def bola(x, y):
         r = RESOLUCAO / 50
     self = Circle(Point(RESOLUCAO * (x / 100), RESOLUCAO * (y / 100)), r)
     self.setFill(BOTOES)
-    # self.setOutline('white')
     self.draw(JOGO)
     return self
 
@@ -121,7 +122,7 @@ def menu_resolucao():
     op4 = retangulo(5, 80, 95, 70)
     op5 = retangulo(5, 95, 95, 85)
 
-    texto0 = texto_sem_ret(50, 12, True, f'Selecione uma resolução:\n(Atual: {RESOLUCAO})')
+    texto0 = texto_sem_ret(50, 12, True, f'Selecione uma resolução:\n(Atual: {RESOLUCAO}x{RESOLUCAO})')
     texto1 = texto_ret(op1, '250x250')
     texto2 = texto_ret(op2, '500x500')
     texto3 = texto_ret(op3, '750x750')
@@ -137,28 +138,23 @@ def menu_resolucao():
         if teclas in ('Up', 'W', 'w'):
             if selecionado != 1:
                 selecionado -= 1
+
         # Seleciona p/ baixo
         elif teclas in ('Down', 'S', 's'):
             if selecionado != 5:
                 selecionado += 1
+
         # Ao selecionar
         elif teclas in ('Return', 'space'):
             opcoes = (250, 500, 750, 1000)
-            if selecionado != 5 and opcoes[selecionado - 1] != RESOLUCAO:
+            if selecionado == 5:
+                limpar(lista)
+                return True
+            elif opcoes[selecionado - 1] != RESOLUCAO:
                 RESOLUCAO = opcoes[selecionado - 1]
                 mudar_resolucao()
-            limpar(lista)
-            if not MUDOU_RESOLUCAO and selecionado != 5:
-                if RESOLUCAO == 250:
-                    maior = False
-                else:
-                    maior = True
-                msg = texto_sem_ret(50, 50, maior, "Você selecionou a mesma resolução")
-                teclas = None
-                while teclas not in ('Return', 'space', 'Escape', 'BackSpace'):
-                    teclas = JOGO.checkKey()
-                msg.undraw()
-            return True
+                limpar(lista)
+                return True
 
         # ESC
         elif teclas in ('Escape', 'BackSpace'):
@@ -260,14 +256,12 @@ def jogo_principal():
     # Variáveis necessárias
     ACABOU, _CAIU = False, False
     PONTOS = 0
-    """
-       --- X ---
-       1 = Direita
-      -1 = Esquerda
-       --- Y ---
-       1 = Baixo
-      -1 = Cima
-    """
+    """    --- X ---
+           1 = Direita
+          -1 = Esquerda
+           --- Y ---
+           1 = Baixo
+          -1 = Cima     """
     # Gera pra onde a bolinha vai (random e para cima)
     x, y = randrange(-1, 2, 2), -1
     # Cria a primeira posição da bolinha (random com limites)
@@ -378,10 +372,15 @@ def jogo_principal():
 # Resultado final
 def resultado():
     # Variáveis necessárias
-    global PONTOS, _CAIU, EXTRA
+    global PONTOS, _CAIU, EXTRA, FUNDO, RECORD
     dificuldades_string = 'FÁCIL', 'NORMAL', 'DIFÍCIL'
+    primeiro, segundo, terceiro = None, None, None
+    retorna, continua, enquanto, ultimo = False, False, False, False
+    alfabeto = []
+    texto_primeiro, texto_segundo, texto_terceiro = None, None, None
 
-    if EXTRA and not _CAIU and PONTOS == 76:
+    # Condições de mensagem final
+    if EXTRA and not _CAIU and PONTOS == 48:
         texto0 = texto_sem_ret(50, 35, False, '>>> PARABÉNS! VOCÊ VENCEU! <<<')
     elif _CAIU:
         texto0 = texto_sem_ret(50, 35, False, '>>> VOCÊ DEIXOU A BOLINHA CAIR <<<')
@@ -389,25 +388,100 @@ def resultado():
         texto0 = texto_sem_ret(50, 35, False, '>>> VOCÊ FINALIZOU O JOGO <<<')
     texto1 = texto_sem_ret(50, 45, False, f'PONTUAÇÃO FINAL: {PONTOS}')
     texto2 = texto_sem_ret(50, 55, False, f'DIFICULDADE: {dificuldades_string[DIFICULDADE-1]}')
-    texto3 = texto_sem_ret(50, 65, False, '[ESC] Menu')
+    texto3 = texto_sem_ret(50, 65, False, '[ENTER/ESC] Salvar Recorde')
+    texto = (texto0, texto1, texto2, texto3)
 
-    voltar = False
-
-    while not voltar:
+    while not continua:
 
         teclas = JOGO.checkKey()
 
-        # Retornar ao Menu
         if teclas in ('Return', 'space', 'Escape', 'BackSpace'):
-            texto = (texto0, texto1, texto2, texto3)
             limpar(texto)
-            voltar = True
+            texto1 = texto_sem_ret(50, 45, True, 'INSIRA SEU NOME:')
+            continua = True
+
+    for _ in range(65, 91):
+        alfabeto.append(chr(_))
+
+    for _ in range(97, 123):
+        alfabeto.append(chr(_))
+
+    alfabeto = tuple(alfabeto)
+    sel = 0
+    x = 38
+    letra = texto_sem_ret(x, 57, True, f'{alfabeto[sel]}')
+    ret = retangulo(x - 5, 60, x + 5, 62)
+    ret.setOutline(FUNDO)
+
+    while not enquanto:
+
+        teclas = JOGO.checkKey()
+
+        if teclas in ('Down', 'S', 's'):
+            if sel != 51:
+                sel += 1
+            else:
+                sel = 0
+            letra = atualizar_letra(letra, alfabeto, sel, x)
+
+        elif teclas in ('Up', 'W', 'w'):
+            if sel != 0:
+                sel -= 1
+            else:
+                sel = 51
+            letra = atualizar_letra(letra, alfabeto, sel, x)
+
+        elif teclas in ('Return', 'space'):
+            if primeiro is None:
+                primeiro = alfabeto[sel]
+                texto_primeiro = texto_sem_ret(x, 57, True, f'{alfabeto[sel]}')
+            elif segundo is None:
+                segundo = alfabeto[sel]
+                texto_segundo = texto_sem_ret(x, 57, True, f'{alfabeto[sel]}')
+            elif terceiro is None:
+                terceiro = alfabeto[sel]
+                texto_terceiro = texto_sem_ret(x, 57, True, f'{alfabeto[sel]}')
+                ultimo = True
+
+            if not ultimo:
+                x += 12
+                sel = 0
+                ret = atualizar_ret(ret, x)
+                letra = atualizar_letra(letra, alfabeto, sel, x)
+            else:
+                letra.undraw()
+                ret.undraw()
+                RECORD = f'{primeiro+segundo+terceiro} {PONTOS}pts'
+                enquanto = True
+
+    while not retorna:
+        teclas = JOGO.checkKey()
+        if teclas in ('Return', 'space', 'Escape', 'BackSpace'):
+            retorna = True
+
+    lista = (letra, texto1, texto_primeiro, texto_segundo, texto_terceiro)
+    limpar(lista)
+
+
+def atualizar_letra(letra, alfabeto, sel, x):
+    letra.undraw()
+    letra = texto_sem_ret(x, 57, True, f'{alfabeto[sel]}')
+    return letra
+
+
+def atualizar_ret(ret, x):
+    ret.undraw()
+    ret = retangulo(x - 5, 60, x + 5, 62)
+    ret.setOutline(FUNDO)
+    return ret
 
 
 # Função de Pause
 def pausar():
     # Variáveis necessárias
     global ACABOU, PONTOS, _COMECOU
+    pausa, confirmou = True, False
+
     if not _COMECOU:
         texto0 = texto_sem_ret(50, 30, True, '>>> INICIE O JOGO <<<')
     else:
@@ -415,10 +489,9 @@ def pausar():
     texto1 = texto_sem_ret(50, 40, True, '[ENTER] Jogar')
     texto2 = texto_sem_ret(50, 50, True, '[ESC] Menu')
 
-    pausa, selecionou_opcao = True, False
-
     # Salvar os objetos do menu pausar para quando alguém selecionar uma opção
     objetos_do_pausar = texto0, texto1, texto2
+
     while pausa:
 
         teclas = JOGO.checkKey()
@@ -434,10 +507,11 @@ def pausar():
             texto = (texto0, texto1, texto2)
             limpar(texto)
             pausa = confirmar()
-            selecionou_opcao = True
+            confirmou = True
 
-        if selecionou_opcao and pausa:
-            selecionou_opcao = False
+        # Criar os objetos novamente caso volte ao Menu de pausa
+        if confirmou and pausa:
+            confirmou = False
             for objeto in objetos_do_pausar:
                 objeto.draw(JOGO)
 
@@ -446,11 +520,13 @@ def pausar():
 def confirmar():
     # Variáveis necessárias
     global ACABOU, RESOLUCAO
+
     # Se o cliente estiver em uma calculadora
     if RESOLUCAO == 250:
         menor = False
     else:
         menor = True
+
     texto0 = texto_sem_ret(50, 30, menor, '>> Você perderá seu progresso <<')
     texto1 = texto_sem_ret(50, 40, menor, '[ENTER] Confirmar')
     texto2 = texto_sem_ret(50, 50, menor, '[ESC] Voltar')
@@ -472,7 +548,6 @@ def confirmar():
         elif teclas in ('Escape', 'BackSpace'):
             texto = (texto0, texto1, texto2)
             limpar(texto)
-            confirma = False
             return True
 
 
@@ -511,7 +586,10 @@ def bateu(ball, x, y, barra):
     # Barra P2 Y
     p2y = barra.getP2().getY()
     # DIFICULDADE
-    d = DIFICULDADE * 0.1
+    if EXTRA:
+        d = DIFICULDADE * 0.1 * 0.25
+    else:
+        d = DIFICULDADE * 0.1
     # Fórmula para o raio da circunferência
     if DIFICULDADE == 3:
         r = (9 / 500) * RESOLUCAO
@@ -532,25 +610,13 @@ def bateu(ball, x, y, barra):
 
             # Aumentar o x, que representa a velocidade da bola para os lados, com base na dificuldade
             if x > 0:
-                if EXTRA:
-                    x += XRANDOM
-                else:
-                    x += d + XRANDOM
+                x += d + XRANDOM
             else:
-                if EXTRA:
-                    x -= XRANDOM
-                else:
-                    x -= d + XRANDOM
+                x -= d + XRANDOM
             if y > 0:
-                if EXTRA:
-                    y += YRANDOM
-                else:
-                    y += d + YRANDOM
+                y += d + YRANDOM
             else:
-                if EXTRA:
-                    y -= YRANDOM
-                else:
-                    y -= d + YRANDOM
+                y -= d + YRANDOM
 
             # Inverter a direção da bola para cima, já que ela bateu no topo da barra
             if y > 0:
@@ -586,7 +652,6 @@ def bateu(ball, x, y, barra):
 
 # Função para checar se bateu nos cubos
 def bateu_extra(ball, x, y, lista_cubos):
-
     # Criação de variáveis repetitivas:
     # BolaX
     bx = ball.getCenter().getX()
@@ -612,23 +677,25 @@ def bateu_extra(ball, x, y, lista_cubos):
             # Se bateu embaixo ou se bateu em cima
             if c2y - RESOLUCAO*(1/100) <= by - r <= c2y and y < 0 or RESOLUCAO*(1/100) + c1y >= by + r >= c1y and y > 0:
                 y = -y
-                bateu_cubo(cubo, lista_cubos)
+                bateu_cubo(cubo, lista_cubos, x)
                 bateu_no_cubo = True
             # Se bateu na direita ou se bateu na esquerda
             if c2x - RESOLUCAO*(1/100) <= bx - r <= c2x and x < 0 or c1x + RESOLUCAO*(1/100) >= bx + r >= c1x and x > 0:
                 x = -x
                 if not bateu_no_cubo:
-                    bateu_cubo(cubo, lista_cubos)
+                    bateu_cubo(cubo, lista_cubos, x)
+
     return x, y
 
 
 # Comandos repetitivos quando batia no Cubo
-def bateu_cubo(cubo, lista_cubos):
-    global PONTOS
+def bateu_cubo(cubo, lista_cubos, x):
+    global PONTOS, DIFICULDADE
     PONTOS += 1
     atualizar_placar()
     cubo.undraw()
     lista_cubos.remove(cubo)
+    x += DIFICULDADE * 0.1 * 0.25
 
 
 # Função de Criação e Atualização do Placar
@@ -646,18 +713,18 @@ def atualizar_placar():
 
 # Função de Criação dos Cubos
 def cubos():
-    global RESOLUCAO, BOTOES, JOGO
+    global RESOLUCAO, BOTOES, JOGO, FUNDO
 
     # Armazena todos os cubos na lista
     lista_cubos = []
-    for y in range(2, 20+1, 5):
-        for x in range(2, 96+1, 5):
-            self = Rectangle(Point(RESOLUCAO * (x / 100 + 1 / 100), RESOLUCAO * (y / 100 + 1 / 100)),
-                             Point(RESOLUCAO * (x / 100 + 5 / 100), RESOLUCAO * (y / 100 + 5 / 100)))
+    for y in range(2, 14+1, 6):
+        for x in range(2, 96+1, 6):
+            self = Rectangle(Point(RESOLUCAO * (x / 100), RESOLUCAO * (y / 100)),
+                             Point(RESOLUCAO * ((x+6) / 100), RESOLUCAO * ((y+6) / 100)))
             cor = color_rgb(randrange(0, 256), randrange(0, 256), randrange(0, 256))
-            self.setOutline(cor)
+            self.setOutline(FUNDO)
             self.setFill(cor)
-            self.setWidth(2)
+            self.setWidth(3)
             self.draw(JOGO)
             lista_cubos.append(self)
             time.sleep(0.01)
@@ -667,14 +734,9 @@ def objetos_menu_principal(lista):
     for objeto in lista:
         objeto.draw(JOGO)
 
-# Menu Principal
-def menu_principal():
-    global FUNDO, RESOLUCAO, JOGO, MUDOU_RESOLUCAO, EXTRA
 
-    # Variáveis necessárias
-    selecionado = 1
-    selecionou, selecionou_opcao = False, False
-
+def montar_menu():
+    global JOGO, RECORD
     # Desativa o 'autoflush' caso o jogador venha do Jogo
     JOGO.autoflush = False
 
@@ -685,15 +747,32 @@ def menu_principal():
     op5 = retangulo(5, 95, 95, 85)
 
     # Função texto em prática
-    texto0 = texto_sem_ret(50, 10, True, 'MENU PRINCIPAL')
-    texto5 = texto_ret(op1, 'JOGAR')
-    texto1 = texto_ret(op2, 'RESOLUÇÃO')
-    texto2 = texto_ret(op3, 'DIFICULDADE')
-    texto3 = texto_ret(op4, 'COMO JOGAR')
-    texto4 = texto_ret(op5, 'FASE EXTRA')
+    if RECORD is None:
+        texto0 = texto_sem_ret(50, 10, True, 'MENU PRINCIPAL')
+    else:
+        texto0 = texto_sem_ret(50, 6, True, f'MENU PRINCIPAL\nRECORDE: {RECORD}')
+    texto1 = texto_ret(op1, 'JOGAR')
+    texto2 = texto_ret(op2, 'RESOLUÇÃO')
+    texto3 = texto_ret(op3, 'DIFICULDADE')
+    texto4 = texto_ret(op4, 'COMO JOGAR')
+    texto5 = texto_ret(op5, 'FASE EXTRA')
+
+    return op1, op2, op3, op4, op5, texto0, texto1, texto2, texto3, texto4, texto5
+
+
+# Menu Principal
+def menu_principal():
+    global FUNDO, RESOLUCAO, JOGO, MUDOU_RESOLUCAO, EXTRA
+
+    # Variáveis necessárias
+    selecionado = 1
+    selecionou, selecionou_opcao = False, False
+
+    # Monta o Menu
+    op1, op2, op3, op4, op5, texto0, texto1, texto2, texto3, texto4, texto5 = montar_menu()
 
     # Salvá-los para quando o usuário retornar ao menu principal, eles serem mostrados novamente
-    lista_dos_objetos = op1, op2, op3, op4, op5, texto0, texto5, texto1, texto2, texto3, texto4
+    lista_dos_objetos = op1, op2, op3, op4, op5, texto0, texto1, texto2, texto3, texto4, texto5
 
     # Enquanto não selecionar nada, continua no Menu
     while not selecionou:
@@ -722,8 +801,7 @@ def menu_principal():
             elif selecionado == 4:
                 selecionou_opcao = menu_comojogar()
             elif selecionado == 5:
-                selecionou = True
-                EXTRA = True
+                selecionou, EXTRA = True, True
                 selecionou_opcao = jogo_principal()
 
         # ESC
@@ -734,25 +812,17 @@ def menu_principal():
         if selecionou_opcao and not MUDOU_RESOLUCAO:
             # Mostrar novamente os objetos após o retorno do usuário
             selecionou, selecionou_opcao = False, False
-            JOGO.autoflush = False
             objetos_menu_principal(lista_dos_objetos)
+
         elif selecionou_opcao:
             # Trocar as dimensões dos objetos do menu principal após a mudança de resolução
             selecionou, selecionou_opcao, MUDOU_RESOLUCAO = False, False, False
-            JOGO.autoflush = False
-            op1 = retangulo(5, 35, 95, 20)
-            op2 = retangulo(5, 50, 95, 40)
-            op3 = retangulo(5, 65, 95, 55)
-            op4 = retangulo(5, 80, 95, 70)
-            op5 = retangulo(5, 95, 95, 85)
-            texto0 = texto_sem_ret(50, 10, True, 'MENU PRINCIPAL')
-            texto5 = texto_ret(op1, 'JOGAR')
-            texto1 = texto_ret(op2, 'RESOLUÇÃO')
-            texto2 = texto_ret(op3, 'DIFICULDADE')
-            texto3 = texto_ret(op4, 'COMO JOGAR')
-            texto4 = texto_ret(op5, 'FASE EXTRA')
+
+            # Monta o Menu novamente
+            op1, op2, op3, op4, op5, texto0, texto1, texto2, texto3, texto4, texto5 = montar_menu()
+
             # Atualizar a lista dos objetos com as dimensões corretas
-            lista_dos_objetos = op1, op2, op3, op4, op5, texto0, texto5, texto1, texto2, texto3, texto4
+            lista_dos_objetos = op1, op2, op3, op4, op5, texto0, texto1, texto2, texto3, texto4, texto5
 
         listaop = (op1, op2, op3, op4, op5)
         resetar_outline(listaop, selecionado)
