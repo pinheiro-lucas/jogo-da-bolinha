@@ -148,7 +148,7 @@ def menu_resolucao():
                 RESOLUCAO = opcoes[selecionado - 1]
                 mudar_resolucao()
             limpar(lista)
-            if not MUDOU_RESOLUCAO:
+            if not MUDOU_RESOLUCAO and selecionado != 5:
                 if RESOLUCAO == 250:
                     maior = False
                 else:
