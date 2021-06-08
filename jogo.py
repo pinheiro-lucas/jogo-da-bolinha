@@ -384,54 +384,60 @@ def resultado():
         texto0 = texto_sem_ret(50, 35, False, '>>> VOCÊ FINALIZOU O JOGO <<<')
     texto1 = texto_sem_ret(50, 45, False, f'PONTUAÇÃO FINAL: {PONTOS}')
     texto2 = texto_sem_ret(50, 55, False, f'DIFICULDADE: {dificuldades_string[DIFICULDADE-1]}')
-    if RECORD is not None or EXTRA:
-        ctd, indice, pontuacao = 0, 4, ''
-        while len(RECORD) - 7 > ctd:
+
+    # Verificar se já houve algum recorde e não colocar um recorde para a fase extra
+    if RECORD is not None:
+        pontuacao = ''
+        # Descobrir qual o recorde anterior
+        for indice in range(4, len(RECORD)-3):
             pontuacao += RECORD[indice]
-            indice += 1
-            ctd += 1
         pontuacao = int(pontuacao)
-        if pontuacao > PONTOS or PONTOS == pontuacao or EXTRA:
+        # Se a pontuação atual não superar o recorde já estabelecido ou for igual a ele ou o usuário estava jogando a fase extra,
+        # não será sobrescrito o recorde já estabelecido
+        if pontuacao > PONTOS or PONTOS == pontuacao:
             texto3 = texto_sem_ret(50, 65, False, '[ENTER/ESC] Para continuar')
             teclas = None
             while teclas not in ('Return', 'space', 'Escape', 'BackSpace'):
                 teclas = JOGO.checkKey()
             texto = (texto0, texto1, texto2, texto3)
             limpar(texto)
+        # Se a pontuação atual superar o recorde já estabelecido, essa pontuação tornar-se-á o novo recorde
         elif PONTOS > pontuacao:
             formar_recorde(texto0, texto1, texto2)
     else:
         formar_recorde(texto0, texto1, texto2)
 
+# Função para a formação do recorde
 def formar_recorde(texto0, texto1, texto2):
     global RECORD
     
     # Variáveis da função
     primeiro, segundo, terceiro = None, None, None
-    retorna, continua, terminou, ultimo = False, False, False, False
+    terminou, ultimo = False, False
     texto_primeiro, texto_segundo, texto_terceiro = None, None, None
     alfabeto = []
 
     texto3 = texto_sem_ret(50, 65, False, '[ENTER/ESC] Salvar Recorde')
     texto = (texto0, texto1, texto2, texto3)
 
-    while not continua:
-
+    # Aguarda o usuário pressionar teclas específicas para, depois, colocar seu nome para salvar o recorde
+    teclas = None
+    while teclas not in ('Return', 'space', 'Escape', 'BackSpace'):
         teclas = JOGO.checkKey()
 
-        if teclas in ('Return', 'space', 'Escape', 'BackSpace'):
-            limpar(texto)
-            texto1 = texto_sem_ret(50, 45, True, 'INSIRA SEU NOME:')
-            continua = True
+    # Retirar os elementos anteriores da tela
+    limpar(texto)
 
+    # Cria as opções de letra do usuário
     for _ in range(65, 91):
         alfabeto.append(chr(_))
-
     for _ in range(97, 123):
         alfabeto.append(chr(_))
-
     alfabeto = tuple(alfabeto)
+    
+    # Criação de variáveis e 
     sel, x = 0, 38
+    texto1 = texto_sem_ret(50, 45, True, 'INSIRA SEU NOME:')
     letra = texto_sem_ret(x, 57, True, f'{alfabeto[sel]}')
     ret = retangulo(x - 5, 60, x + 5, 62)
     ret.setOutline(FUNDO)
@@ -477,10 +483,9 @@ def formar_recorde(texto0, texto1, texto2):
                 RECORD = f'{primeiro+segundo+terceiro} {PONTOS}pts'
                 terminou = True
 
-    while not retorna:
+    teclas = None
+    while teclas not in ('Return', 'space', 'Escape', 'BackSpace'):
         teclas = JOGO.checkKey()
-        if teclas in ('Return', 'space', 'Escape', 'BackSpace'):
-            retorna = True
 
     lista = (letra, texto1, texto_primeiro, texto_segundo, texto_terceiro)
     limpar(lista)
@@ -707,8 +712,6 @@ def bateu_extra(ball, x, y, lista_cubos):
                 x = -x
                 if not bateu_no_cubo:
                     x = bateu_cubo(cubo, lista_cubos, x)
-    if len(lista_cubos) == 0:
-        ACABOU = True
     return x, y
 
 
@@ -728,6 +731,9 @@ def atualizar_placar():
     # Não deixa dar undraw caso não exista (0 pts)
     if PONTOS > 0:
         PLACAR.undraw()
+    # Ganhou a fase extra
+    if PONTOS == 48 and EXTRA:
+        ACABOU = True
     # Fica dando undraw e draw
     PLACAR = texto_sem_ret(50, 90, True, f'PONTUAÇÃO ATUAL: {PONTOS}')
     PLACAR.setTextColor(FUNDO)
@@ -830,6 +836,7 @@ def menu_principal():
             elif selecionado == 5:
                 EXTRA = True
                 selecionou = jogo_principal()
+                jogou = True
 
         # ESC
         elif teclas in ('Escape', 'BackSpace'):
