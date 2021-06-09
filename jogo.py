@@ -682,6 +682,7 @@ def bateu_extra(ball, x, y, lista_cubos):
     for cubo in lista_cubos:
         # Pontos do cubo
         bateu_no_cubo = False
+        condicao = False
 
         # Criação de variáveis repetitivas:
         c1x = cubo.getP1().getX()
@@ -691,19 +692,102 @@ def bateu_extra(ball, x, y, lista_cubos):
 
         if c1x - r <= bx <= c2x + r and c1y - r <= by <= c2y + r:
             # Se bateu embaixo ou se bateu em cima
-            if c2y - RESOLUCAO * (1 / 100) <= by - r <= c2y and y < 0 or RESOLUCAO * (
-                    1 / 100) + c1y >= by + r >= c1y and y > 0:
+            embaixo = c2y - RESOLUCAO*(1/100) <= by - r <= c2y and y < 0
+            cima = RESOLUCAO*(1/100) + c1y >= by + r >= c1y and y > 0
+            if embaixo or cima:
                 y = -y
-                x = bateu_cubo(cubo, lista_cubos, x)
                 bateu_no_cubo = True
+            
             # Se bateu na direita ou se bateu na esquerda
-            if c2x - RESOLUCAO * (1 / 100) <= bx - r <= c2x and x < 0 or c1x + RESOLUCAO * (
-                    1 / 100) >= bx + r >= c1x and x > 0:
-                x = -x
-                if not bateu_no_cubo:
-                    x = bateu_cubo(cubo, lista_cubos, x)
+            direita = c2x - RESOLUCAO*(1/100) <= bx - r <= c2x and x < 0
+            esquerda = c1x + RESOLUCAO*(1/100) >= bx + r >= c1x and x > 0
+            if direita or esquerda:
+                if len(lista_cubos) != 1:
+                    if bateu_no_cubo:
+                        print("quino")
+                        cubos, bateu_no_cubo, condicao = pode_quinar(lista_cubos, cima, embaixo, esquerda, direita, c1x, c1y, c2x, c2y)
+        
+                        if condicao:
+                            x = -x
+                        
+                        if len(cubos) == 2:
+                            for outro_cubo in cubos:
+                                lista_cubos.remove(outro_cubo)
+
+                    else:
+                        bateu_no_cubo = True
+                        x = -x
+                else:
+                    bateu_no_cubo = True
+
+            if bateu_no_cubo:
+                x = bateu_cubo(cubo, lista_cubos, x)
+
     return x, y
 
+def pode_quinar(lista_cubos, cima, embaixo, esquerda, direita, c1x, c1y, c2x, c2y):
+    cubos = []
+    if cima and direita:
+        for outro_cubo in lista_cubos:
+            o1x = outro_cubo.getP1().getX()
+            o1y = outro_cubo.getP1().getY()
+            o2x = outro_cubo.getP2().getX()
+            o2y = outro_cubo.getP2().getY()
+
+            if c2x ==  o1x and c1y == o1y and c2y == o2y or c2x == o2x and c1y == o2y and c1x == o1x:
+                cubos.append(outro_cubo)
+                if len(cubos) == 2:
+                    return cubos, False, True
+        
+        if len(cubos) == 1:
+            return cubos, True, False
+
+    elif cima and esquerda:
+        for outro_cubo in lista_cubos:
+            o1x = outro_cubo.getP1().getX()
+            o1y = outro_cubo.getP1().getY()
+            o2x = outro_cubo.getP2().getX()
+            o2y = outro_cubo.getP2().getY()
+
+            if c2x == o2x and c1y == o2y and c1x == o1x or c1x == o2x and c1y == o1y and c2y == o2y:
+                cubos.append(outro_cubo)
+                if len(cubos) == 2:
+                    return cubos, False, True
+
+        if len(cubos) == 1:
+            return cubos, True, False
+
+    elif embaixo and direita:
+        for outro_cubo in lista_cubos:
+            o1x = outro_cubo.getP1().getX()
+            o1y = outro_cubo.getP1().getY()
+            o2x = outro_cubo.getP2().getX()
+            o2y = outro_cubo.getP2().getY()
+
+            if c2x ==  o1x and c1y == o1y and c2y == o2y or c2x == o2x and c2y == o1y and c1x == o1x:
+                cubos.append(outro_cubo)
+                if len(cubos) == 2:
+                    return cubos, False, True
+
+        if len(cubos) == 1:
+            return cubos, True, False
+
+    elif embaixo and esquerda:
+        for outro_cubo in lista_cubos:
+            o1x = outro_cubo.getP1().getX()
+            o1y = outro_cubo.getP1().getY()
+            o2x = outro_cubo.getP2().getX()
+            o2y = outro_cubo.getP2().getY()
+
+            if c1x == o2x and c1y == o1y and c2y == o2y or c2x == o2x and c2y == o1y and c1x == o1x:
+                cubos.append(outro_cubo)
+                if len(cubos) == 2:
+                    return cubos, False, True
+        
+        if len(cubos) == 1:
+            return cubos, True, False
+
+    return cubos, True, True
 
 # Comandos repetitivos quando batia no Cubo
 def bateu_cubo(cubo, lista_cubos, x):
