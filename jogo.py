@@ -2,7 +2,6 @@ from graphics import *
 from random import randrange
 import time
 
-
 # Variáveis Globais
 RESOLUCAO, DIFICULDADE = 500, 2
 FUNDO, BOTOES = color_rgb(33, 33, 33), color_rgb(163, 103, 127)
@@ -10,7 +9,8 @@ ACABOU, PLACAR, LATERAL, EXTRA = False, None, True, False
 _COMECOU, _CAIU = False, False
 XRANDOM, YRANDOM, PONTOS = 0, 0, 0
 MUDOU_RESOLUCAO = False
-RECORD = None
+RECORD = [[0, ''], [0, ''], [0, '']]
+RECORD_EXTRA = [[0, ''], [0, ''], [0, '']]
 
 # Cria o Menu Principal
 JOGO = GraphWin('Jogo da Bolinha', RESOLUCAO, RESOLUCAO, autoflush=False)
@@ -216,21 +216,20 @@ def menu_dificuldade():
         resetar_outline(listaop, selecionado)
 
 
-# Sub-Menu de Tutorial
-def menu_comojogar():
-    global FUNDO, RESOLUCAO
+# Sub-Menu de Como Jogar
+def menu_records():
+    global FUNDO, RESOLUCAO, RECORD, RECORD_EXTRA
     selecionou, selecionado = False, 1
 
     op1 = retangulo(5, 95, 95, 85)
 
     texto1 = texto_ret(op1, '< Voltar')
-
-    texto2 = texto_sem_ret(50, 15, True, 'COMO JOGAR:')
-    texto3 = texto_sem_ret(50, 35, False, 'Não deixe a bolinha cair')
-    texto4 = texto_sem_ret(50, 40, False, 'A velocidade aumenta conforme o tempo')
-    texto5 = texto_sem_ret(50, 45, False, 'Utilize as setinhas para controlar a barra')
-    texto6 = texto_sem_ret(50, 50, False, 'Aproveite as dificuldades mais desafiadoras')
-    texto7 = texto_sem_ret(50, 55, False, 'Aproveite também o modo extra')
+    texto2 = texto_sem_ret(50, 10, True, f'FÁCIL: {RECORD[0][1]} {RECORD[0][0]}pts')
+    texto3 = texto_sem_ret(50, 22, True, f'NORMAL: {RECORD[1][1]} {RECORD[1][0]}pts')
+    texto4 = texto_sem_ret(50, 34, True, f'DIFÍCIL: {RECORD[2][1]} {RECORD[2][0]}pts')
+    texto5 = texto_sem_ret(50, 48, True, f'[EXTRA] FÁCIL: {RECORD_EXTRA[0][1]} {RECORD_EXTRA[0][0]}pts')
+    texto6 = texto_sem_ret(50, 60, True, f'[EXTRA] NORMAL: {RECORD_EXTRA[1][1]} {RECORD_EXTRA[1][0]}pts')
+    texto7 = texto_sem_ret(50, 72, True, f'[EXTRA] DIFÍCIL: {RECORD_EXTRA[2][1]} {RECORD_EXTRA[2][0]}pts')
 
     lista = (op1, texto1, texto2, texto3, texto4, texto5, texto6, texto7)
 
@@ -245,6 +244,7 @@ def menu_comojogar():
         # Função para checagem do selecionado
         listaop = op1,
         resetar_outline(listaop, selecionado)
+
 
 # Jogo Principal
 def jogo_principal():
@@ -317,12 +317,12 @@ def jogo_principal():
             # Cálculo do movimento da barra
             if x > 0:
                 if 5 + x * DIFICULDADE <= RESOLUCAO - 9 - p2x:
-                    barra.move((5 + x * DIFICULDADE)*(RESOLUCAO/500), 0)
+                    barra.move((5 + x * DIFICULDADE) * (RESOLUCAO / 500), 0)
                 else:
                     barra.move(RESOLUCAO - 9 - p2x, 0)
             else:
                 if -(-5 + x * DIFICULDADE) <= RESOLUCAO - 9 - p2x:
-                    barra.move(-(RESOLUCAO/500)*(-5 + x * DIFICULDADE), 0)
+                    barra.move(-(RESOLUCAO / 500) * (-5 + x * DIFICULDADE), 0)
                 else:
                     barra.move(RESOLUCAO - 9 - p2x, 0)
 
@@ -334,12 +334,12 @@ def jogo_principal():
             # Cálculo do movimento da barra
             if x > 0:
                 if 5 + x * DIFICULDADE <= p1x - 9:
-                    barra.move(-(5 + x * DIFICULDADE)*(RESOLUCAO/500), 0)
+                    barra.move(-(5 + x * DIFICULDADE) * (RESOLUCAO / 500), 0)
                 else:
                     barra.move((-p1x + 9), 0)
             else:
                 if -(-5 + x * DIFICULDADE) <= p1x - 9:
-                    barra.move((-5 + x * DIFICULDADE)*(RESOLUCAO/500), 0)
+                    barra.move((-5 + x * DIFICULDADE) * (RESOLUCAO / 500), 0)
                 else:
                     barra.move((-p1x + 9), 0)
 
@@ -372,8 +372,9 @@ def jogo_principal():
 # Resultado final
 def resultado():
     # Variáveis necessárias
-    global PONTOS, _CAIU, EXTRA, FUNDO, RECORD
+    global PONTOS, _CAIU, EXTRA, FUNDO, RECORD, RECORD_EXTRA
     dificuldades_string = 'FÁCIL', 'NORMAL', 'DIFÍCIL'
+    teclas = None
 
     # Condições de mensagem final
     if EXTRA and not _CAIU and PONTOS == 48:
@@ -383,50 +384,30 @@ def resultado():
     else:
         texto0 = texto_sem_ret(50, 35, False, '>>> VOCÊ FINALIZOU O JOGO <<<')
     texto1 = texto_sem_ret(50, 45, False, f'PONTUAÇÃO FINAL: {PONTOS}')
-    texto2 = texto_sem_ret(50, 55, False, f'DIFICULDADE: {dificuldades_string[DIFICULDADE-1]}')
+    texto2 = texto_sem_ret(50, 55, False, f'DIFICULDADE: {dificuldades_string[DIFICULDADE - 1]}')
 
-    # Verificar se já houve algum recorde e não colocar um recorde para a fase extra
-    if RECORD is not None:
-        pontuacao = ''
-        # Descobrir qual o recorde anterior
-        for indice in range(4, len(RECORD)-3):
-            pontuacao += RECORD[indice]
-        pontuacao = int(pontuacao)
-        # Se a pontuação atual não superar o recorde já estabelecido ou for igual a ele ou o usuário estava jogando a fase extra,
-        # não será sobrescrito o recorde já estabelecido
-        if pontuacao > PONTOS or PONTOS == pontuacao:
-            texto3 = texto_sem_ret(50, 65, False, '[ENTER/ESC] Para continuar')
-            teclas = None
-            while teclas not in ('Return', 'space', 'Escape', 'BackSpace'):
-                teclas = JOGO.checkKey()
-            texto = (texto0, texto1, texto2, texto3)
-            limpar(texto)
-        # Se a pontuação atual superar o recorde já estabelecido, essa pontuação tornar-se-á o novo recorde
-        elif PONTOS > pontuacao:
-            formar_recorde(texto0, texto1, texto2)
+    if EXTRA and PONTOS > RECORD_EXTRA[DIFICULDADE-1][0] or not EXTRA and PONTOS > RECORD[DIFICULDADE-1][0]:
+        texto3 = texto_sem_ret(50, 65, False, '[ENTER/ESC] Salvar Recorde')
     else:
-        formar_recorde(texto0, texto1, texto2)
+        texto3 = texto_sem_ret(50, 65, False, '[ENTER/ESC] Para continuar')
+
+    while teclas not in ('Return', 'space', 'Escape', 'BackSpace'):
+        teclas = JOGO.checkKey()
+
+    texto = (texto0, texto1, texto2, texto3)
+    limpar(texto)
+    formar_recorde()
+
 
 # Função para a formação do recorde
-def formar_recorde(texto0, texto1, texto2):
-    global RECORD
-    
+def formar_recorde():
+    global RECORD, EXTRA, RECORD_EXTRA
+
     # Variáveis da função
     primeiro, segundo, terceiro = None, None, None
     terminou, ultimo = False, False
     texto_primeiro, texto_segundo, texto_terceiro = None, None, None
     alfabeto = []
-
-    texto3 = texto_sem_ret(50, 65, False, '[ENTER/ESC] Salvar Recorde')
-    texto = (texto0, texto1, texto2, texto3)
-
-    # Aguarda o usuário pressionar teclas específicas para, depois, colocar seu nome para salvar o recorde
-    teclas = None
-    while teclas not in ('Return', 'space', 'Escape', 'BackSpace'):
-        teclas = JOGO.checkKey()
-
-    # Retirar os elementos anteriores da tela
-    limpar(texto)
 
     # Cria as opções de letra do usuário
     for _ in range(65, 91):
@@ -434,61 +415,68 @@ def formar_recorde(texto0, texto1, texto2):
     for _ in range(97, 123):
         alfabeto.append(chr(_))
     alfabeto = tuple(alfabeto)
-    
-    # Criação de variáveis e 
-    sel, x = 0, 38
-    texto1 = texto_sem_ret(50, 45, True, 'INSIRA SEU NOME:')
-    letra = texto_sem_ret(x, 57, True, f'{alfabeto[sel]}')
-    ret = retangulo(x - 5, 60, x + 5, 62)
-    ret.setOutline(FUNDO)
 
-    while not terminou:
+    if EXTRA and PONTOS > RECORD_EXTRA[DIFICULDADE-1][0] or not EXTRA and PONTOS > RECORD[DIFICULDADE-1][0]:
 
-        teclas = JOGO.checkKey()
+        # Criação de variáveis
+        sel, x = 0, 38
+        texto1 = texto_sem_ret(50, 45, True, 'INSIRA SEU NOME:')
+        letra = texto_sem_ret(x, 57, True, f'{alfabeto[sel]}')
+        ret = retangulo(x - 5, 60, x + 5, 62)
+        ret.setOutline(FUNDO)
 
-        if teclas in ('Down', 'S', 's'):
-            if sel != 51:
-                sel += 1
-            else:
-                sel = 0
-            letra = atualizar_letra(letra, alfabeto, sel, x)
+        while not terminou:
 
-        elif teclas in ('Up', 'W', 'w'):
-            if sel != 0:
-                sel -= 1
-            else:
-                sel = 51
-            letra = atualizar_letra(letra, alfabeto, sel, x)
+            teclas = JOGO.checkKey()
 
-        elif teclas in ('Return', 'space'):
-            if primeiro is None:
-                primeiro = alfabeto[sel]
-                texto_primeiro = texto_sem_ret(x, 57, True, f'{alfabeto[sel]}')
-            elif segundo is None:
-                segundo = alfabeto[sel]
-                texto_segundo = texto_sem_ret(x, 57, True, f'{alfabeto[sel]}')
-            elif terceiro is None:
-                terceiro = alfabeto[sel]
-                texto_terceiro = texto_sem_ret(x, 57, True, f'{alfabeto[sel]}')
-                ultimo = True
-
-            if not ultimo:
-                x += 12
-                sel = 0
-                ret = atualizar_ret(ret, x)
+            if teclas in ('Down', 'S', 's'):
+                if sel != 51:
+                    sel += 1
+                else:
+                    sel = 0
                 letra = atualizar_letra(letra, alfabeto, sel, x)
-            else:
-                letra.undraw()
-                ret.undraw()
-                RECORD = f'{primeiro+segundo+terceiro} {PONTOS}pts'
-                terminou = True
 
-    teclas = None
-    while teclas not in ('Return', 'space', 'Escape', 'BackSpace'):
-        teclas = JOGO.checkKey()
+            elif teclas in ('Up', 'W', 'w'):
+                if sel != 0:
+                    sel -= 1
+                else:
+                    sel = 51
+                letra = atualizar_letra(letra, alfabeto, sel, x)
 
-    lista = (letra, texto1, texto_primeiro, texto_segundo, texto_terceiro)
-    limpar(lista)
+            elif teclas in ('Return', 'space'):
+                if primeiro is None:
+                    primeiro = alfabeto[sel]
+                    texto_primeiro = texto_sem_ret(x, 57, True, f'{alfabeto[sel]}')
+                elif segundo is None:
+                    segundo = alfabeto[sel]
+                    texto_segundo = texto_sem_ret(x, 57, True, f'{alfabeto[sel]}')
+                elif terceiro is None:
+                    terceiro = alfabeto[sel]
+                    texto_terceiro = texto_sem_ret(x, 57, True, f'{alfabeto[sel]}')
+                    ultimo = True
+
+                if not ultimo:
+                    x += 12
+                    sel = 0
+                    ret = atualizar_ret(ret, x)
+                    letra = atualizar_letra(letra, alfabeto, sel, x)
+                else:
+                    letra.undraw()
+                    ret.undraw()
+                    if EXTRA:
+                        RECORD_EXTRA[DIFICULDADE-1] = [PONTOS, f'{primeiro + segundo + terceiro}']
+                    else:
+                        RECORD[DIFICULDADE-1] = [PONTOS, f'{primeiro + segundo + terceiro}']
+                    terminou = True
+
+        teclas = None
+        texto2 = texto_sem_ret(50, 70, False, '[ENTER/ESC] Para continuar')
+        while teclas not in ('Return', 'space', 'Escape', 'BackSpace'):
+            teclas = JOGO.checkKey()
+
+        lista = (letra, texto1, texto2, texto_primeiro, texto_segundo, texto_terceiro)
+        limpar(lista)
+
 
 def atualizar_letra(letra, alfabeto, sel, x):
     letra.undraw()
@@ -632,8 +620,8 @@ def bateu(ball, x, y, barra):
             # Randomização do movimento da bola
             x -= XRANDOM
             y -= YRANDOM
-            XRANDOM = randrange(1, 10)/100
-            YRANDOM = randrange(1, 10)/100
+            XRANDOM = randrange(1, 10) / 100
+            YRANDOM = randrange(1, 10) / 100
 
             # Aumentar o x, que representa a velocidade da bola para os lados, com base na dificuldade
             if x > 0:
@@ -703,12 +691,14 @@ def bateu_extra(ball, x, y, lista_cubos):
 
         if c1x - r <= bx <= c2x + r and c1y - r <= by <= c2y + r:
             # Se bateu embaixo ou se bateu em cima
-            if c2y - RESOLUCAO*(1/100) <= by - r <= c2y and y < 0 or RESOLUCAO*(1/100) + c1y >= by + r >= c1y and y > 0:
+            if c2y - RESOLUCAO * (1 / 100) <= by - r <= c2y and y < 0 or RESOLUCAO * (
+                    1 / 100) + c1y >= by + r >= c1y and y > 0:
                 y = -y
                 x = bateu_cubo(cubo, lista_cubos, x)
                 bateu_no_cubo = True
             # Se bateu na direita ou se bateu na esquerda
-            if c2x - RESOLUCAO*(1/100) <= bx - r <= c2x and x < 0 or c1x + RESOLUCAO*(1/100) >= bx + r >= c1x and x > 0:
+            if c2x - RESOLUCAO * (1 / 100) <= bx - r <= c2x and x < 0 or c1x + RESOLUCAO * (
+                    1 / 100) >= bx + r >= c1x and x > 0:
                 x = -x
                 if not bateu_no_cubo:
                     x = bateu_cubo(cubo, lista_cubos, x)
@@ -725,6 +715,7 @@ def bateu_cubo(cubo, lista_cubos, x):
     x += DIFICULDADE * 0.1 * 0.25
     return x
 
+
 # Função de Criação e Atualização do Placar
 def atualizar_placar():
     global PONTOS, PLACAR, FUNDO, EXTRA, ACABOU
@@ -739,16 +730,17 @@ def atualizar_placar():
     PLACAR.setTextColor(FUNDO)
     return PLACAR
 
+
 # Função de Criação dos Cubos
 def cubos():
     global RESOLUCAO, BOTOES, JOGO, FUNDO
 
     # Armazena todos os cubos na lista
     lista_cubos = []
-    for y in range(2, 14+1, 6):
-        for x in range(2, 96+1, 6):
+    for y in range(2, 14 + 1, 6):
+        for x in range(2, 96 + 1, 6):
             self = Rectangle(Point(RESOLUCAO * (x / 100), RESOLUCAO * (y / 100)),
-                             Point(RESOLUCAO * ((x+6) / 100), RESOLUCAO * ((y+6) / 100)))
+                             Point(RESOLUCAO * ((x + 6) / 100), RESOLUCAO * ((y + 6) / 100)))
             cor = color_rgb(randrange(0, 256), randrange(0, 256), randrange(0, 256))
             self.setOutline(FUNDO)
             self.setFill(cor)
@@ -758,13 +750,14 @@ def cubos():
             time.sleep(0.01)
     return lista_cubos
 
+
 def objetos_menu_principal(lista):
     for objeto in lista:
         objeto.draw(JOGO)
 
 
 def montar_menu():
-    global JOGO, RECORD, RESOLUCAO
+    global JOGO, RESOLUCAO
     # Desativa o 'autoflush' caso o jogador venha do Jogo
     JOGO.autoflush = False
 
@@ -775,19 +768,11 @@ def montar_menu():
     op5 = retangulo(5, 95, 95, 85)
 
     # Função texto em prática
-    if RECORD is None:
-        texto0 = texto_sem_ret(50, 10, True, 'MENU PRINCIPAL')
-    else:
-        if RESOLUCAO == 250:
-            maior = False
-        else:
-            maior = True
-        texto0 = texto_sem_ret(50, 10, maior, f'MENU PRINCIPAL\nRECORDE: {RECORD}')
-    
+    texto0 = texto_sem_ret(50, 10, True, 'MENU PRINCIPAL')
     texto1 = texto_ret(op1, 'JOGAR')
     texto2 = texto_ret(op2, 'RESOLUÇÃO')
     texto3 = texto_ret(op3, 'DIFICULDADE')
-    texto4 = texto_ret(op4, 'COMO JOGAR')
+    texto4 = texto_ret(op4, 'RECORDES')
     texto5 = texto_ret(op5, 'FASE EXTRA')
 
     return op1, op2, op3, op4, op5, texto0, texto1, texto2, texto3, texto4, texto5
@@ -832,7 +817,7 @@ def menu_principal():
             elif selecionado == 3:
                 selecionou = menu_dificuldade()
             elif selecionado == 4:
-                selecionou = menu_comojogar()
+                selecionou = menu_records()
             elif selecionado == 5:
                 EXTRA = True
                 selecionou = jogo_principal()
