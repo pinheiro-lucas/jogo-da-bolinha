@@ -4,7 +4,7 @@ import time
 
 # Variáveis Globais
 RESOLUCAO, DIFICULDADE = 500, 2
-FUNDO, BOTOES = color_rgb(33, 33, 33), color_rgb(163, 103, 127)
+FUNDO, BOTOES = color_rgb(255, 255, 255), color_rgb(0, 0, 0)
 ACABOU, PLACAR, LATERAL, EXTRA = False, None, True, False
 _COMECOU, _CAIU = False, False
 XRANDOM, YRANDOM, PONTOS = 0, 0, 0
@@ -72,26 +72,35 @@ def texto_sem_ret(x, y, t, msg):
 
 # Função da Bolinha
 def bola(x, y):
-    global JOGO, RESOLUCAO, BOTOES
+    global JOGO, RESOLUCAO, FUNDO
     # Fórmula para o raio da circunferência
     if DIFICULDADE == 3:
         r = (9 / 500) * RESOLUCAO
     else:
         r = RESOLUCAO / 50
-    self = Circle(Point(RESOLUCAO * (x / 100), RESOLUCAO * (y / 100)), r)
-    self.setFill(BOTOES)
+    self = Circle(Point(RESOLUCAO * (x / 100), RESOLUCAO * (y / 100)), r-5)  # DEBUG @thiago
+    self.setFill(FUNDO)
+    self.setOutline(FUNDO)
+    self.draw(JOGO)
+    return self
+
+
+# Função de Imagem (Testes)
+def img(x, y, png):
+    global JOGO, RESOLUCAO
+    self = Image(Point(RESOLUCAO * (x / 100), RESOLUCAO * (y / 100)), png)
     self.draw(JOGO)
     return self
 
 
 # Função de Criar a Barrinha
 def criar_barra(x1, y1, x2, y2):
-    global BOTOES, RESOLUCAO, JOGO
+    global RESOLUCAO, JOGO, FUNDO
     self = Rectangle(Point(RESOLUCAO * (x1 / 100), RESOLUCAO * (y1 / 100)),
                      Point(RESOLUCAO * (x2 / 100), RESOLUCAO * (y2 / 100)))
-    self.setFill(BOTOES)
+    self.setFill(FUNDO)
     self.setWidth(2)
-    self.setOutline(BOTOES)
+    self.setOutline(FUNDO)
     self.draw(JOGO)
     return self
 
@@ -265,9 +274,12 @@ def jogo_principal():
     # Gera pra onde a bolinha vai (random e para cima)
     x, y = randrange(-1, 2, 2), -1
     # Cria a primeira posição da bolinha (random com limites)
-    bolinha = bola(randrange(45, 56), 72)
+    teste2 = img(50, 50, 'gramado.gif')
+    teste = randrange(45, 56)
+    bolinha = bola(teste, 72)
+    pngbola = img(teste, 72, 'futebol.gif')
     # Cria as barras da margem
-    self, self2 = margem()
+    margem1, margem2, linha1, linha2 = margem()
     self3 = None
     # Variável da lateral da barra
     LATERAL = True
@@ -353,13 +365,14 @@ def jogo_principal():
             x, y = bateu_extra(bolinha, x, y, self3)
         # Cálculo do movimento da bolinha
         bolinha.move(RESOLUCAO * (x / 1000 * DIFICULDADE), RESOLUCAO * (y / 1000 * DIFICULDADE))
+        pngbola.move(RESOLUCAO * (x / 1000 * DIFICULDADE), RESOLUCAO * (y / 1000 * DIFICULDADE))
         # Taxa de atualização (60hz)
         update(60)
 
     # Limpar tudo ao acabar
     if EXTRA:
         limpar(self3)
-    lista = (bolinha, PLACAR, self, self2, barra)
+    lista = (bolinha, PLACAR, margem1, margem2, linha1, linha2, barra, pngbola, teste2)
     limpar(lista)
     # Mostrar o placar final
     resultado()
@@ -386,7 +399,7 @@ def resultado():
     texto1 = texto_sem_ret(50, 45, False, f'PONTUAÇÃO FINAL: {PONTOS}')
     texto2 = texto_sem_ret(50, 55, False, f'DIFICULDADE: {dificuldades_string[DIFICULDADE - 1]}')
 
-    if EXTRA and PONTOS > RECORD_EXTRA[DIFICULDADE-1][0] or not EXTRA and PONTOS > RECORD[DIFICULDADE-1][0]:
+    if EXTRA and PONTOS > RECORD_EXTRA[DIFICULDADE - 1][0] or not EXTRA and PONTOS > RECORD[DIFICULDADE - 1][0]:
         texto3 = texto_sem_ret(50, 65, False, '[ENTER/ESC] Salvar Recorde')
     else:
         texto3 = texto_sem_ret(50, 65, False, '[ENTER/ESC] Para continuar')
@@ -416,7 +429,7 @@ def formar_recorde():
         alfabeto.append(chr(_))
     alfabeto = tuple(alfabeto)
 
-    if EXTRA and PONTOS > RECORD_EXTRA[DIFICULDADE-1][0] or not EXTRA and PONTOS > RECORD[DIFICULDADE-1][0]:
+    if EXTRA and PONTOS > RECORD_EXTRA[DIFICULDADE - 1][0] or not EXTRA and PONTOS > RECORD[DIFICULDADE - 1][0]:
 
         # Criação de variáveis
         sel, x = 0, 38
@@ -464,9 +477,9 @@ def formar_recorde():
                     letra.undraw()
                     ret.undraw()
                     if EXTRA:
-                        RECORD_EXTRA[DIFICULDADE-1] = [PONTOS, f'{primeiro + segundo + terceiro}']
+                        RECORD_EXTRA[DIFICULDADE - 1] = [PONTOS, f'{primeiro + segundo + terceiro}']
                     else:
-                        RECORD[DIFICULDADE-1] = [PONTOS, f'{primeiro + segundo + terceiro}']
+                        RECORD[DIFICULDADE - 1] = [PONTOS, f'{primeiro + segundo + terceiro}']
                     terminou = True
 
         teclas = None
@@ -580,7 +593,23 @@ def margem():
     self2.setWidth(10)
     self2.setFill(BOTOES)
     self2.draw(JOGO)
-    return self, self2
+
+    # Linhas
+    self3 = Line(Point(RESOLUCAO * (2 / 100), RESOLUCAO * (83 / 100)),
+                 Point(RESOLUCAO * (98 / 100), RESOLUCAO * (83 / 100)))
+    self3.setOutline(FUNDO)
+    self3.setWidth(5)
+    self3.setFill(FUNDO)
+    self3.draw(JOGO)
+
+    self4 = Line(Point(RESOLUCAO * (2 / 100), RESOLUCAO * (96 / 100)),
+                 Point(RESOLUCAO * (98 / 100), RESOLUCAO * (96 / 100)))
+    self4.setOutline(FUNDO)
+    self4.setWidth(5)
+    self4.setFill(FUNDO)
+    self4.draw(JOGO)
+
+    return self, self2, self3, self4
 
 
 # Função para checar se bateu
@@ -682,7 +711,6 @@ def bateu_extra(ball, x, y, lista_cubos):
     for cubo in lista_cubos:
         # Pontos do cubo
         bateu_no_cubo = False
-        condicao = False
 
         # Criação de variáveis repetitivas:
         c1x = cubo.getP1().getX()
@@ -692,26 +720,27 @@ def bateu_extra(ball, x, y, lista_cubos):
 
         if c1x - r <= bx <= c2x + r and c1y - r <= by <= c2y + r:
             # Se bateu embaixo ou se bateu em cima
-            embaixo = c2y - RESOLUCAO*(1/100) <= by - r <= c2y and y < 0
-            cima = RESOLUCAO*(1/100) + c1y >= by + r >= c1y and y > 0
+            embaixo = c2y - RESOLUCAO * (1 / 100) <= by - r <= c2y and y < 0
+            cima = RESOLUCAO * (1 / 100) + c1y >= by + r >= c1y and y > 0
             if embaixo or cima:
                 y = -y
                 bateu_no_cubo = True
-            
+
             # Se bateu na direita ou se bateu na esquerda
-            direita = c2x - RESOLUCAO*(1/100) <= bx - r <= c2x and x < 0
-            esquerda = c1x + RESOLUCAO*(1/100) >= bx + r >= c1x and x > 0
+            direita = c2x - RESOLUCAO * (1 / 100) <= bx - r <= c2x and x < 0
+            esquerda = c1x + RESOLUCAO * (1 / 100) >= bx + r >= c1x and x > 0
             if direita or esquerda:
                 if len(lista_cubos) != 1:
                     if bateu_no_cubo:
                         print("quino")
-                        cubos, bateu_no_cubo, condicao = pode_quinar(lista_cubos, cima, embaixo, esquerda, direita, c1x, c1y, c2x, c2y)
-        
+                        list_cubos2, bateu_no_cubo, condicao = pode_quinar(lista_cubos, cima, embaixo, esquerda,
+                                                                           direita, c1x, c1y, c2x, c2y)
+
                         if condicao:
                             x = -x
-                        
-                        if len(cubos) == 2:
-                            for outro_cubo in cubos:
+
+                        if len(list_cubos2) == 2:
+                            for outro_cubo in list_cubos2:
                                 lista_cubos.remove(outro_cubo)
 
                     else:
@@ -725,8 +754,9 @@ def bateu_extra(ball, x, y, lista_cubos):
 
     return x, y
 
+
 def pode_quinar(lista_cubos, cima, embaixo, esquerda, direita, c1x, c1y, c2x, c2y):
-    cubos = []
+    list_cubos = []
     if cima and direita:
         for outro_cubo in lista_cubos:
             o1x = outro_cubo.getP1().getX()
@@ -734,13 +764,13 @@ def pode_quinar(lista_cubos, cima, embaixo, esquerda, direita, c1x, c1y, c2x, c2
             o2x = outro_cubo.getP2().getX()
             o2y = outro_cubo.getP2().getY()
 
-            if c2x ==  o1x and c1y == o1y and c2y == o2y or c2x == o2x and c1y == o2y and c1x == o1x:
-                cubos.append(outro_cubo)
-                if len(cubos) == 2:
-                    return cubos, False, True
-        
-        if len(cubos) == 1:
-            return cubos, True, False
+            if c2x == o1x and c1y == o1y and c2y == o2y or c2x == o2x and c1y == o2y and c1x == o1x:
+                list_cubos.append(outro_cubo)
+                if len(list_cubos) == 2:
+                    return list_cubos, False, True
+
+        if len(list_cubos) == 1:
+            return list_cubos, True, False
 
     elif cima and esquerda:
         for outro_cubo in lista_cubos:
@@ -750,12 +780,12 @@ def pode_quinar(lista_cubos, cima, embaixo, esquerda, direita, c1x, c1y, c2x, c2
             o2y = outro_cubo.getP2().getY()
 
             if c2x == o2x and c1y == o2y and c1x == o1x or c1x == o2x and c1y == o1y and c2y == o2y:
-                cubos.append(outro_cubo)
-                if len(cubos) == 2:
-                    return cubos, False, True
+                list_cubos.append(outro_cubo)
+                if len(list_cubos) == 2:
+                    return list_cubos, False, True
 
-        if len(cubos) == 1:
-            return cubos, True, False
+        if len(list_cubos) == 1:
+            return list_cubos, True, False
 
     elif embaixo and direita:
         for outro_cubo in lista_cubos:
@@ -764,13 +794,13 @@ def pode_quinar(lista_cubos, cima, embaixo, esquerda, direita, c1x, c1y, c2x, c2
             o2x = outro_cubo.getP2().getX()
             o2y = outro_cubo.getP2().getY()
 
-            if c2x ==  o1x and c1y == o1y and c2y == o2y or c2x == o2x and c2y == o1y and c1x == o1x:
-                cubos.append(outro_cubo)
-                if len(cubos) == 2:
-                    return cubos, False, True
+            if c2x == o1x and c1y == o1y and c2y == o2y or c2x == o2x and c2y == o1y and c1x == o1x:
+                list_cubos.append(outro_cubo)
+                if len(list_cubos) == 2:
+                    return list_cubos, False, True
 
-        if len(cubos) == 1:
-            return cubos, True, False
+        if len(list_cubos) == 1:
+            return list_cubos, True, False
 
     elif embaixo and esquerda:
         for outro_cubo in lista_cubos:
@@ -780,14 +810,15 @@ def pode_quinar(lista_cubos, cima, embaixo, esquerda, direita, c1x, c1y, c2x, c2
             o2y = outro_cubo.getP2().getY()
 
             if c1x == o2x and c1y == o1y and c2y == o2y or c2x == o2x and c2y == o1y and c1x == o1x:
-                cubos.append(outro_cubo)
-                if len(cubos) == 2:
-                    return cubos, False, True
-        
-        if len(cubos) == 1:
-            return cubos, True, False
+                list_cubos.append(outro_cubo)
+                if len(list_cubos) == 2:
+                    return list_cubos, False, True
 
-    return cubos, True, True
+        if len(list_cubos) == 1:
+            return list_cubos, True, False
+
+    return list_cubos, True, True
+
 
 # Comandos repetitivos quando batia no Cubo
 def bateu_cubo(cubo, lista_cubos, x):
@@ -831,6 +862,7 @@ def cubos():
             self.setWidth(3)
             self.draw(JOGO)
             lista_cubos.append(self)
+            # Animação visual
             time.sleep(0.01)
     return lista_cubos
 
