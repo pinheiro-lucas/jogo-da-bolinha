@@ -4,7 +4,7 @@ import time
 
 # Variáveis Globais
 RESOLUCAO, DIFICULDADE = 500, 2
-FUNDO, BOTOES = color_rgb(255, 255, 255), color_rgb(0, 0, 0)
+FUNDO, BOTOES = color_rgb(201, 238, 242), color_rgb(9, 27, 38)
 ACABOU, PLACAR, LATERAL, EXTRA = False, None, True, False
 _COMECOU, _CAIU = False, False
 XRANDOM, YRANDOM, PONTOS = 0, 0, 0
@@ -22,9 +22,10 @@ def resetar_outline(listaop, s):
     global FUNDO
     for element in listaop:
         if listaop.index(element) == s - 1:
-            element.setOutline('white')
-        else:
+            element.setWidth(4)
             element.setOutline(FUNDO)
+        else:
+            element.setWidth(0)
 
 
 # Função do Retângulo
@@ -52,12 +53,12 @@ def texto_ret(ret, msg):
 
 
 # Função de Texto sem Retângulo
-def texto_sem_ret(x, y, t, msg):
-    global BOTOES, RESOLUCAO, JOGO
+def texto_sem_ret(x, y, t, msg, cor=BOTOES, fonte='times roman'):
+    global BOTOES, RESOLUCAO, JOGO, FUNDO
     self = Text(Point(RESOLUCAO * (x / 100), RESOLUCAO * (y / 100)), msg)
     self.setStyle('bold')
-    self.setTextColor(BOTOES)
-    self.setFace('times roman')
+    self.setTextColor(cor)
+    self.setFace(fonte)
     # Tamanho maior ou menor
     if t:
         tamanho_maior = {250: 15, 500: 20, 750: 25, 1000: 30}
@@ -95,12 +96,12 @@ def img(x, y, png):
 
 # Função de Criar a Barrinha
 def criar_barra(x1, y1, x2, y2):
-    global RESOLUCAO, JOGO, FUNDO
+    global RESOLUCAO, JOGO, BOTOES
     self = Rectangle(Point(RESOLUCAO * (x1 / 100), RESOLUCAO * (y1 / 100)),
                      Point(RESOLUCAO * (x2 / 100), RESOLUCAO * (y2 / 100)))
-    self.setFill(FUNDO)
+    self.setFill(BOTOES)
     self.setWidth(2)
-    self.setOutline(FUNDO)
+    self.setOutline(BOTOES)
     self.draw(JOGO)
     return self
 
@@ -208,12 +209,15 @@ def menu_dificuldade():
                 selecionado += 1
         # Ao selecionar
         elif teclas in ('Return', 'space'):
-            if selecionado != 4:
+            opcoes = (1, 2, 3)
+            if selecionado == 4:
+                limpar(lista)
+                return True
+            elif opcoes[selecionado - 1] != DIFICULDADE:
                 # Muda a dificuldade
-                opcoes = (1, 2, 3)
                 DIFICULDADE = opcoes[selecionado - 1]
-            limpar(lista)
-            return True
+                limpar(lista)
+                return True
         # ESC
         elif teclas in ('Escape', 'BackSpace'):
             # Volta para o Menu Principal
@@ -275,9 +279,9 @@ def jogo_principal():
     x, y = randrange(-1, 2, 2), -1
     # Cria a primeira posição da bolinha (random com limites)
     teste2 = img(50, 50, 'gramado.gif')
-    teste = randrange(45, 56)
+    teste = randrange(45, 56) 
     bolinha = bola(teste, 72)
-    pngbola = img(teste, 72, 'futebol.gif')
+    pngbola = img(teste, 72, 'bola' + str(RESOLUCAO) + '.gif')
     # Cria as barras da margem
     margem1, margem2, linha1, linha2 = margem()
     self3 = None
@@ -391,18 +395,18 @@ def resultado():
 
     # Condições de mensagem final
     if EXTRA and not _CAIU and PONTOS == 48:
-        texto0 = texto_sem_ret(50, 35, False, '>>> PARABÉNS! VOCÊ VENCEU! <<<')
+        texto0 = texto_sem_ret(50, 35, False, '>>> PARABÉNS! VOCÊ VENCEU! <<<', fonte='courier')
     elif _CAIU:
-        texto0 = texto_sem_ret(50, 35, False, '>>> VOCÊ DEIXOU A BOLINHA CAIR <<<')
+        texto0 = texto_sem_ret(50, 35, False, '>>> VOCÊ DEIXOU A BOLINHA CAIR <<<', fonte='courier')
     else:
-        texto0 = texto_sem_ret(50, 35, False, '>>> VOCÊ FINALIZOU O JOGO <<<')
-    texto1 = texto_sem_ret(50, 45, False, f'PONTUAÇÃO FINAL: {PONTOS}')
-    texto2 = texto_sem_ret(50, 55, False, f'DIFICULDADE: {dificuldades_string[DIFICULDADE - 1]}')
+        texto0 = texto_sem_ret(50, 35, False, '>>> VOCÊ FINALIZOU O JOGO <<<', fonte='courier')
+    texto1 = texto_sem_ret(50, 45, False, f'PONTUAÇÃO FINAL: {PONTOS}', fonte='courier')
+    texto2 = texto_sem_ret(50, 55, False, f'DIFICULDADE: {dificuldades_string[DIFICULDADE - 1]}', fonte='courier')
 
     if EXTRA and PONTOS > RECORD_EXTRA[DIFICULDADE - 1][0] or not EXTRA and PONTOS > RECORD[DIFICULDADE - 1][0]:
-        texto3 = texto_sem_ret(50, 65, False, '[ENTER/ESC] Salvar Recorde')
+        texto3 = texto_sem_ret(50, 65, False, '[ENTER/ESC] Salvar Recorde', fonte='courier')
     else:
-        texto3 = texto_sem_ret(50, 65, False, '[ENTER/ESC] Para continuar')
+        texto3 = texto_sem_ret(50, 65, False, '[ENTER/ESC] Para continuar', fonte='courier')
 
     while teclas not in ('Return', 'space', 'Escape', 'BackSpace'):
         teclas = JOGO.checkKey()
@@ -414,7 +418,7 @@ def resultado():
 
 # Função para a formação do recorde
 def formar_recorde():
-    global RECORD, EXTRA, RECORD_EXTRA
+    global RECORD, EXTRA, RECORD_EXTRA, BOTOES
 
     # Variáveis da função
     primeiro, segundo, terceiro = None, None, None
@@ -433,10 +437,10 @@ def formar_recorde():
 
         # Criação de variáveis
         sel, x = 0, 38
-        texto1 = texto_sem_ret(50, 45, True, 'INSIRA SEU NOME:')
-        letra = texto_sem_ret(x, 57, True, f'{alfabeto[sel]}')
-        ret = retangulo(x - 5, 60, x + 5, 62)
-        ret.setOutline(FUNDO)
+        texto1 = texto_sem_ret(50, 45, True, 'INSIRA SEU NOME:', fonte='courier')
+        letra = texto_sem_ret(x, 57, True, f'{alfabeto[sel]}', fonte='courier')
+        ret = retangulo(x - 5, 60, x + 5, 60.5)
+        ret.setOutline(BOTOES)
 
         while not terminou:
 
@@ -459,13 +463,13 @@ def formar_recorde():
             elif teclas in ('Return', 'space'):
                 if primeiro is None:
                     primeiro = alfabeto[sel]
-                    texto_primeiro = texto_sem_ret(x, 57, True, f'{alfabeto[sel]}')
+                    texto_primeiro = texto_sem_ret(x, 57, True, f'{alfabeto[sel]}', fonte='courier')
                 elif segundo is None:
                     segundo = alfabeto[sel]
-                    texto_segundo = texto_sem_ret(x, 57, True, f'{alfabeto[sel]}')
+                    texto_segundo = texto_sem_ret(x, 57, True, f'{alfabeto[sel]}', fonte='courier')
                 elif terceiro is None:
                     terceiro = alfabeto[sel]
-                    texto_terceiro = texto_sem_ret(x, 57, True, f'{alfabeto[sel]}')
+                    texto_terceiro = texto_sem_ret(x, 57, True, f'{alfabeto[sel]}', fonte='courier')
                     ultimo = True
 
                 if not ultimo:
@@ -493,14 +497,15 @@ def formar_recorde():
 
 def atualizar_letra(letra, alfabeto, sel, x):
     letra.undraw()
-    letra = texto_sem_ret(x, 57, True, f'{alfabeto[sel]}')
+    letra = texto_sem_ret(x, 57, True, f'{alfabeto[sel]}', fonte='courier')
     return letra
 
 
 def atualizar_ret(ret, x):
+    global BOTOES
     ret.undraw()
-    ret = retangulo(x - 5, 60, x + 5, 62)
-    ret.setOutline(FUNDO)
+    ret = retangulo(x - 5, 60, x + 5, 60.5)
+    ret.setOutline(BOTOES)
     return ret
 
 
@@ -511,11 +516,11 @@ def pausar():
     pausa, confirmou = True, False
 
     if not _COMECOU:
-        texto0 = texto_sem_ret(50, 30, True, '>>> INICIE O JOGO <<<')
+        texto0 = texto_sem_ret(50, 30, True, '>>> INICIE O JOGO <<<', color_rgb(0, 0, 0), 'courier')
     else:
-        texto0 = texto_sem_ret(50, 30, True, '>>> JOGO PAUSADO <<<')
-    texto1 = texto_sem_ret(50, 40, True, '[ENTER] Jogar')
-    texto2 = texto_sem_ret(50, 50, True, '[ESC] Menu')
+        texto0 = texto_sem_ret(50, 30, True, '>>> JOGO PAUSADO <<<', color_rgb(0, 0, 0), 'courier')
+    texto1 = texto_sem_ret(50, 40, True, '[ENTER] Jogar', color_rgb(0, 0, 0), 'courier')
+    texto2 = texto_sem_ret(50, 50, True, '[ESC] Menu', color_rgb(0, 0, 0), 'courier')
 
     # Salvar os objetos do menu pausar para quando alguém selecionar uma opção
     objetos_do_pausar = texto0, texto1, texto2
@@ -555,9 +560,9 @@ def confirmar():
     else:
         menor = True
 
-    texto0 = texto_sem_ret(50, 30, menor, '>> Você perderá seu progresso <<')
-    texto1 = texto_sem_ret(50, 40, menor, '[ENTER] Confirmar')
-    texto2 = texto_sem_ret(50, 50, menor, '[ESC] Voltar')
+    texto0 = texto_sem_ret(50, 30, menor, 'Você perderá seu progresso', color_rgb(0, 0, 0), 'courier')
+    texto1 = texto_sem_ret(50, 40, menor, '[ENTER] Confirmar', color_rgb(0, 0, 0), 'courier')
+    texto2 = texto_sem_ret(50, 50, menor, '[ESC] Voltar', color_rgb(0, 0, 0), 'courier')
 
     confirma = True
 
@@ -732,7 +737,6 @@ def bateu_extra(ball, x, y, lista_cubos):
             if direita or esquerda:
                 if len(lista_cubos) != 1:
                     if bateu_no_cubo:
-                        print("quino")
                         list_cubos2, bateu_no_cubo, condicao = pode_quinar(lista_cubos, cima, embaixo, esquerda,
                                                                            direita, c1x, c1y, c2x, c2y)
 
@@ -856,10 +860,12 @@ def cubos():
         for x in range(2, 96 + 1, 6):
             self = Rectangle(Point(RESOLUCAO * (x / 100), RESOLUCAO * (y / 100)),
                              Point(RESOLUCAO * ((x + 6) / 100), RESOLUCAO * ((y + 6) / 100)))
-            cor = color_rgb(randrange(0, 256), randrange(0, 256), randrange(0, 256))
-            self.setOutline(FUNDO)
+            cores = (color_rgb(9, 27, 38), color_rgb(37, 75, 89), color_rgb(84, 130, 140), color_rgb(201, 238, 242),
+                     color_rgb(67, 96, 115), color_rgb(40, 70, 89))
+            cor = cores[randrange(0, 4)]
+            self.setOutline(BOTOES)
             self.setFill(cor)
-            self.setWidth(3)
+            self.setWidth(2)
             self.draw(JOGO)
             lista_cubos.append(self)
             # Animação visual
@@ -876,6 +882,8 @@ def montar_menu():
     global JOGO, RESOLUCAO
     # Desativa o 'autoflush' caso o jogador venha do Jogo
     JOGO.autoflush = False
+
+    img(50, 50, 'fundo.gif')
 
     op1 = retangulo(5, 35, 95, 20)
     op2 = retangulo(5, 50, 95, 40)
