@@ -1,6 +1,5 @@
 from graphics import *
 from random import randrange
-import time
 
 # Variáveis Globais
 RESOLUCAO, DIFICULDADE = 500, 2
@@ -9,13 +8,12 @@ ACABOU, PLACAR, LATERAL, EXTRA = False, None, True, False
 _COMECOU, _CAIU = False, False
 XRANDOM, YRANDOM, PONTOS = 0, 0, 0
 MUDOU_RESOLUCAO = False
-RECORD = [[0, ''], [0, ''], [0, '']]
-RECORD_EXTRA = [[0, ''], [0, ''], [0, '']]
+RECORD = []
+RECORD_EXTRA = []
 
 # Cria o Menu Principal
 JOGO = GraphWin('Jogo da Bolinha', RESOLUCAO, RESOLUCAO, autoflush=False)
 JOGO.setBackground(FUNDO)
-
 
 # Animação de seleção
 def resetar_outline(listaop, s):
@@ -119,6 +117,34 @@ def mudar_resolucao():
 def limpar(lista):
     for _ in lista:
         _.undraw()
+
+
+def records():
+    global RECORD, RECORD_EXTRA
+    arquivo = 'records.txt'
+    if not os.path.isfile(arquivo):
+        open(arquivo, mode='x').close()
+        RECORD = [['N/A', 0], ['N/A', 0], ['N/A', 0]]
+        RECORD_EXTRA = [['N/A', 0], ['N/A', 0], ['N/A', 0]]
+        salvar_record()
+    else:
+        arquivo = open(arquivo, mode='r')
+        flag = 0
+        for linha in arquivo:
+            if flag < 3:
+                RECORD.append(linha.replace('\n', '').split(' '))
+            else:
+                RECORD_EXTRA.append(linha.replace('\n', '').split(' '))
+            flag += 1
+
+
+def salvar_record():
+    global RECORD, RECORD_EXTRA
+    arquivo = open('records.txt', mode='w')
+    for record in RECORD:
+        arquivo.write(record[0] + ' ' + str(record[1]) + '\n')
+    for record in RECORD_EXTRA:
+        arquivo.write(record[0] + ' ' + str(record[1]) + '\n')
 
 
 # Sub-Menu de Resolução
@@ -237,12 +263,12 @@ def menu_records():
     op1 = retangulo(5, 95, 95, 85)
 
     texto1 = texto_ret(op1, '< Voltar')
-    texto2 = texto_sem_ret(50, 10, True, f'FÁCIL: {RECORD[0][1]} {RECORD[0][0]}pts')
-    texto3 = texto_sem_ret(50, 22, True, f'NORMAL: {RECORD[1][1]} {RECORD[1][0]}pts')
-    texto4 = texto_sem_ret(50, 34, True, f'DIFÍCIL: {RECORD[2][1]} {RECORD[2][0]}pts')
-    texto5 = texto_sem_ret(50, 48, True, f'[EXTRA] FÁCIL: {RECORD_EXTRA[0][1]} {RECORD_EXTRA[0][0]}pts')
-    texto6 = texto_sem_ret(50, 60, True, f'[EXTRA] NORMAL: {RECORD_EXTRA[1][1]} {RECORD_EXTRA[1][0]}pts')
-    texto7 = texto_sem_ret(50, 72, True, f'[EXTRA] DIFÍCIL: {RECORD_EXTRA[2][1]} {RECORD_EXTRA[2][0]}pts')
+    texto2 = texto_sem_ret(50, 10, True, f'FÁCIL: {RECORD[0][0]} {RECORD[0][1]}pts')
+    texto3 = texto_sem_ret(50, 22, True, f'NORMAL: {RECORD[1][0]} {RECORD[1][1]}pts')
+    texto4 = texto_sem_ret(50, 34, True, f'DIFÍCIL: {RECORD[2][0]} {RECORD[2][1]}pts')
+    texto5 = texto_sem_ret(50, 48, True, f'[EXTRA] FÁCIL: {RECORD_EXTRA[0][0]} {RECORD_EXTRA[0][1]}pts')
+    texto6 = texto_sem_ret(50, 60, True, f'[EXTRA] NORMAL: {RECORD_EXTRA[1][0]} {RECORD_EXTRA[1][1]}pts')
+    texto7 = texto_sem_ret(50, 72, True, f'[EXTRA] DIFÍCIL: {RECORD_EXTRA[2][0]} {RECORD_EXTRA[2][1]}pts')
 
     lista = (op1, texto1, texto2, texto3, texto4, texto5, texto6, texto7)
 
@@ -279,7 +305,7 @@ def jogo_principal():
     x, y = randrange(-1, 2, 2), -1
     # Cria a primeira posição da bolinha (random com limites)
     teste2 = img(50, 50, 'gramado.gif')
-    teste = randrange(45, 56) 
+    teste = randrange(45, 56)
     bolinha = bola(teste, 72)
     pngbola = img(teste, 72, 'bola' + str(RESOLUCAO) + '.gif')
     # Cria as barras da margem
@@ -403,7 +429,8 @@ def resultado():
     texto1 = texto_sem_ret(50, 45, False, f'PONTUAÇÃO FINAL: {PONTOS}', fonte='courier')
     texto2 = texto_sem_ret(50, 55, False, f'DIFICULDADE: {dificuldades_string[DIFICULDADE - 1]}', fonte='courier')
 
-    if EXTRA and PONTOS > RECORD_EXTRA[DIFICULDADE - 1][0] or not EXTRA and PONTOS > RECORD[DIFICULDADE - 1][0]:
+    if EXTRA and PONTOS > int(RECORD_EXTRA[DIFICULDADE - 1][1]) \
+            or not EXTRA and PONTOS > int(RECORD[DIFICULDADE - 1][1]):
         texto3 = texto_sem_ret(50, 65, False, '[ENTER/ESC] Salvar Recorde', fonte='courier')
     else:
         texto3 = texto_sem_ret(50, 65, False, '[ENTER/ESC] Para continuar', fonte='courier')
@@ -433,7 +460,8 @@ def formar_recorde():
         alfabeto.append(chr(_))
     alfabeto = tuple(alfabeto)
 
-    if EXTRA and PONTOS > RECORD_EXTRA[DIFICULDADE - 1][0] or not EXTRA and PONTOS > RECORD[DIFICULDADE - 1][0]:
+    if EXTRA and PONTOS > int(RECORD_EXTRA[DIFICULDADE - 1][1]) \
+            or not EXTRA and PONTOS > int(RECORD[DIFICULDADE - 1][1]):
 
         # Criação de variáveis
         sel, x = 0, 38
@@ -481,9 +509,10 @@ def formar_recorde():
                     letra.undraw()
                     ret.undraw()
                     if EXTRA:
-                        RECORD_EXTRA[DIFICULDADE - 1] = [PONTOS, f'{primeiro + segundo + terceiro}']
+                        RECORD_EXTRA[DIFICULDADE - 1] = [f'{primeiro + segundo + terceiro}', PONTOS]
                     else:
-                        RECORD[DIFICULDADE - 1] = [PONTOS, f'{primeiro + segundo + terceiro}']
+                        RECORD[DIFICULDADE - 1] = [f'{primeiro + segundo + terceiro}', PONTOS]
+                    salvar_record()
                     terminou = True
 
         teclas = None
@@ -973,6 +1002,7 @@ def menu_principal():
 
 # Inicia o Jogo
 try:
+    records()
     menu_principal()
 # Se a aba for fechada, o jogo finaliza
 except GraphicsError:
