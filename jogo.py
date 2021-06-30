@@ -1,6 +1,7 @@
 # Utilização da biblioteca Graphics + função randrange() da Random
 from graphics import *
 from random import randrange
+from random import choice
 
 # Variáveis Globais
 RESOLUCAO, DIFICULDADE = 500, 2
@@ -320,7 +321,7 @@ def jogo_principal():
     global RESOLUCAO, FUNDO, JOGO, ACABOU, PONTOS, PLACAR, LATERAL, DIFICULDADE, _CAIU, _COMECOU, EXTRA, TECLAS_JOGO
 
     # Variáveis necessárias
-    ACABOU, _CAIU = False, False
+    ACABOU, _CAIU, ajustado = False, False, False
     PONTOS = 0
     """    --- X ---
            1 = Direita
@@ -329,12 +330,12 @@ def jogo_principal():
            1 = Baixo
           -1 = Cima     """
     # Gera pra onde a bolinha vai (random e para cima)
-    x, y = randrange(-1, 2, 2), -1
+    x, y = choice([2, -2]), -2
     # Cria a primeira posição da bolinha (random com limites)
-    teste2 = img(50, 50, 'gramado.gif')
-    teste = randrange(45, 56)
-    bolinha = bola(teste, 72)
-    pngbola = img(teste, 72, 'bola' + str(RESOLUCAO) + '.gif')
+    fundo_gramado = img(50, 50, 'gramado.gif')
+    x_inicial = randrange(45, 56)
+    bolinha = bola(x_inicial, 72)
+    pngbola = img(x_inicial, 72, 'bola' + str(RESOLUCAO) + '.gif')
     # Cria as barras da margem
     margem1, margem2, linha1, linha2 = margem()
     self3 = None
@@ -363,6 +364,11 @@ def jogo_principal():
     pausar()
     _COMECOU = True
 
+    # Raio da bolinha
+    r = RESOLUCAO / 50
+
+    velo_barra = RESOLUCAO / 100
+
     # Núcleo do Jogo
     while not ACABOU:
 
@@ -372,7 +378,6 @@ def jogo_principal():
 
         p2x = barra.getP2().getX()
         p1x = barra.getP1().getX()
-        velo_barra = RESOLUCAO / 100
 
         # Barra vai para a direita até o limite da margem
         # 9 = Margem-1 para corrigir quando não bate na parede por conta da velocidade variável
@@ -380,18 +385,10 @@ def jogo_principal():
         if TECLAS_JOGO in ('Right', 'D', 'd'):
 
             # Cálculo do movimento da barra
-            if x > 0:
-                if 2 + x * DIFICULDADE <= RESOLUCAO - 9 - p2x:
-                    # barra.move((2 + x * DIFICULDADE) * (RESOLUCAO / 500), 0)
-                    barra.move(velo_barra, 0)
-                else:
-                    barra.move(RESOLUCAO - 9 - p2x, 0)
+            if p2x + velo_barra <= RESOLUCAO - 9:
+                barra.move(velo_barra, 0)
             else:
-                if -(-2 + x * DIFICULDADE) <= RESOLUCAO - 9 - p2x:
-                    # barra.move(-(RESOLUCAO / 500) * (-2 + x * DIFICULDADE), 0)
-                    barra.move(velo_barra, 0)
-                else:
-                    barra.move(RESOLUCAO - 9 - p2x, 0)
+                barra.move(RESOLUCAO - 9 - p2x, 0)
 
         # Barra vai para a esquerda até o limite da margem
         # 9 = Margem-1 para corrigir quando não bate na parede por conta da velocidade variável
@@ -399,37 +396,41 @@ def jogo_principal():
         elif TECLAS_JOGO in ('Left', 'A', 'a'):
 
             # Cálculo do movimento da barra
-            if x > 0:
-                if 2 + x * DIFICULDADE <= p1x - 9:
-                    # barra.move(-(2 + x * DIFICULDADE) * (RESOLUCAO / 500), 0)
-                    barra.move(-velo_barra, 0)
-                else:
-                    barra.move((-p1x + 9), 0)
+            if p1x - velo_barra >= 9:
+                barra.move(-velo_barra, 0)
             else:
-                if -(-2 + x * DIFICULDADE) <= p1x - 9:
-                    # barra.move((-2 + x * DIFICULDADE) * (RESOLUCAO / 500), 0)
-                    barra.move(-velo_barra, 0)
-                else:
-                    barra.move((-p1x + 9), 0)
+                barra.move((-p1x + 9), 0)
 
         # Pausa o Jogo
         elif TECLAS_JOGO in ('Escape', 'BackSpace'):
             pausar()
 
         # Checa se bateu a cada atualização
-        x, y = bateu(bolinha, x, y, barra)
+        x, y = bateu(bolinha, x, y, barra, r)
         if EXTRA:
             x, y = bateu_extra(bolinha, x, y, self3)
+
         # Cálculo do movimento da bolinha
-        bolinha.move(RESOLUCAO * (x / 1000 * DIFICULDADE), RESOLUCAO * (y / 1000 * DIFICULDADE))
-        pngbola.move(RESOLUCAO * (x / 1000 * DIFICULDADE), RESOLUCAO * (y / 1000 * DIFICULDADE))
+        if y > 0:
+            if bolinha.getCenter().getY() + r + RESOLUCAO * (y / 1000 * DIFICULDADE) > barra.getP1().getY() and not ajustado:
+                bolinha.move(RESOLUCAO * (x / 1000 * DIFICULDADE), barra.getP1().getY() - (bolinha.getCenter().getY() + r))
+                pngbola.move(RESOLUCAO * (x / 1000 * DIFICULDADE), barra.getP1().getY() - (bolinha.getCenter().getY() + r))
+                ajustado = True
+            else:
+                bolinha.move(RESOLUCAO * (x / 1000 * DIFICULDADE), RESOLUCAO * (y / 1000 * DIFICULDADE))
+                pngbola.move(RESOLUCAO * (x / 1000 * DIFICULDADE), RESOLUCAO * (y / 1000 * DIFICULDADE))
+        else:
+            bolinha.move(RESOLUCAO * (x / 1000 * DIFICULDADE), RESOLUCAO * (y / 1000 * DIFICULDADE))
+            pngbola.move(RESOLUCAO * (x / 1000 * DIFICULDADE), RESOLUCAO * (y / 1000 * DIFICULDADE))
+            ajustado = False
+
         # Taxa de atualização (60hz)
         update(60)
 
     # Limpar tudo ao acabar
     if EXTRA:
         limpar(self3)
-    lista = (bolinha, PLACAR, margem1, margem2, linha1, linha2, barra, pngbola, teste2)
+    lista = (bolinha, PLACAR, margem1, margem2, linha1, linha2, barra, pngbola, fundo_gramado)
     limpar(lista)
     # Mostrar o placar final
     resultado()
@@ -684,7 +685,7 @@ def retangulo2(x1, y1, x2, y2, fundo=False):
 
 
 # Função para checar se bateu
-def bateu(ball, x, y, barra):
+def bateu(ball, x, y, barra, r):
     global ACABOU, DIFICULDADE, PONTOS, PLACAR, LATERAL, _CAIU, EXTRA, XRANDOM, YRANDOM
 
     # Criação de variáveis repetitivas:
@@ -706,17 +707,14 @@ def bateu(ball, x, y, barra):
     else:
         d = DIFICULDADE * 0.1
     # Fórmula para o raio da circunferência
-    if DIFICULDADE == 3:
-        r = (9 / 500) * RESOLUCAO
-    else:
-        r = RESOLUCAO / 50
+    
 
     # Verificando o intervalo entre o ponto mais à esquerda da barra e o mais a direita da barra
     # (duas primeiras condições) e as duas últimas condições o intervalo do ponto mais e baixo e mais acima
     if p1x - r <= bx <= p2x + r and p1y - r <= by <= p2y + r:
-
+        
         # Verificando se a bola está no topo da barra
-        if p1y == by + r and LATERAL:
+        if p1y - r <= by <= p1y - r + (RESOLUCAO/100) and LATERAL:
             # Randomização do movimento da bola
             x -= XRANDOM
             y -= YRANDOM
@@ -774,10 +772,8 @@ def bateu_extra(ball, x, y, lista_cubos):
     # BolaY
     by = ball.getCenter().getY()
     # Fórmula para o raio da circunferência
-    if DIFICULDADE == 3:
-        r = (9 / 500) * RESOLUCAO
-    else:
-        r = RESOLUCAO / 50
+
+    r = RESOLUCAO / 50
 
     for cubo in lista_cubos:
         # Pontos do cubo
@@ -810,8 +806,9 @@ def bateu_extra(ball, x, y, lista_cubos):
                             x = -x
 
                         if len(list_cubos2) == 2:
-                            for outro_cubo in list_cubos2:
-                                lista_cubos.remove(outro_cubo)
+                            for indice in list_cubos2:
+                                lista_cubos[indice].undraw()
+                                lista_cubos.remove(lista_cubos[indice])
 
                     else:
                         bateu_no_cubo = True
@@ -820,13 +817,14 @@ def bateu_extra(ball, x, y, lista_cubos):
                     bateu_no_cubo = True
 
             if bateu_no_cubo:
-                x = bateu_cubo(cubo, lista_cubos, x)
+                x, lista_cubos = bateu_cubo(cubo, lista_cubos, x)
 
     return x, y
 
 
 def pode_quinar(lista_cubos, cima, embaixo, esquerda, direita, c1x, c1y, c2x, c2y):
     list_cubos = []
+    indice = 0
     if cima and direita:
         for outro_cubo in lista_cubos:
             o1x = outro_cubo.getP1().getX()
@@ -835,9 +833,10 @@ def pode_quinar(lista_cubos, cima, embaixo, esquerda, direita, c1x, c1y, c2x, c2
             o2y = outro_cubo.getP2().getY()
 
             if c2x == o1x and c1y == o1y and c2y == o2y or c2x == o2x and c1y == o2y and c1x == o1x:
-                list_cubos.append(outro_cubo)
+                list_cubos.append(indice)
                 if len(list_cubos) == 2:
                     return list_cubos, False, True
+            indice += 1
 
         if len(list_cubos) == 1:
             return list_cubos, True, False
@@ -850,9 +849,10 @@ def pode_quinar(lista_cubos, cima, embaixo, esquerda, direita, c1x, c1y, c2x, c2
             o2y = outro_cubo.getP2().getY()
 
             if c2x == o2x and c1y == o2y and c1x == o1x or c1x == o2x and c1y == o1y and c2y == o2y:
-                list_cubos.append(outro_cubo)
+                list_cubos.append(indice)
                 if len(list_cubos) == 2:
                     return list_cubos, False, True
+                indice += 1
 
         if len(list_cubos) == 1:
             return list_cubos, True, False
@@ -865,9 +865,10 @@ def pode_quinar(lista_cubos, cima, embaixo, esquerda, direita, c1x, c1y, c2x, c2
             o2y = outro_cubo.getP2().getY()
 
             if c2x == o1x and c1y == o1y and c2y == o2y or c2x == o2x and c2y == o1y and c1x == o1x:
-                list_cubos.append(outro_cubo)
+                list_cubos.append(indice)
                 if len(list_cubos) == 2:
                     return list_cubos, False, True
+            indice += 1
 
         if len(list_cubos) == 1:
             return list_cubos, True, False
@@ -880,9 +881,10 @@ def pode_quinar(lista_cubos, cima, embaixo, esquerda, direita, c1x, c1y, c2x, c2
             o2y = outro_cubo.getP2().getY()
 
             if c1x == o2x and c1y == o1y and c2y == o2y or c2x == o2x and c2y == o1y and c1x == o1x:
-                list_cubos.append(outro_cubo)
+                list_cubos.append(indice)
                 if len(list_cubos) == 2:
                     return list_cubos, False, True
+            indice += 1
 
         if len(list_cubos) == 1:
             return list_cubos, True, False
@@ -898,7 +900,7 @@ def bateu_cubo(cubo, lista_cubos, x):
     cubo.undraw()
     lista_cubos.remove(cubo)
     x += DIFICULDADE * 0.1 * 0.25
-    return x
+    return x, lista_cubos
 
 
 # Função de Criação e Atualização do Placar
