@@ -7,9 +7,9 @@ FUNDO, BOTOES = color_rgb(201, 238, 242), color_rgb(9, 27, 38)
 ACABOU, PLACAR, LATERAL, EXTRA = False, None, True, False
 _COMECOU, _CAIU = False, False
 XRANDOM, YRANDOM, PONTOS = 0, 0, 0
+RECORD, RECORD_EXTRA = [], []
 MUDOU_RESOLUCAO = False
-RECORD = []
-RECORD_EXTRA = []
+TECLAS_JOGO = ''
 
 # Cria o Menu Principal
 JOGO = GraphWin('Jogo da Bolinha', RESOLUCAO, RESOLUCAO, autoflush=False)
@@ -147,6 +147,27 @@ def salvar_record():
         arquivo.write(record[0] + ' ' + str(record[1]) + '\n')
 
 
+def tecla_apertou(tecla):
+    global TECLAS_JOGO
+    TECLAS_JOGO = tecla.keysym
+
+
+def tecla_soltou(tecla):
+    global TECLAS_JOGO
+    if TECLAS_JOGO == tecla.keysym:
+        TECLAS_JOGO = ''
+
+
+def tecla_menu():
+    global JOGO, TECLAS_JOGO
+    TECLAS_JOGO = ''
+    if JOGO.isClosed():
+        exit()
+    JOGO.update()
+    tecla = TECLAS_JOGO
+    return tecla
+
+
 # Sub-Menu de Resolução
 def menu_resolucao():
     global RESOLUCAO, JOGO, FUNDO
@@ -168,7 +189,7 @@ def menu_resolucao():
     lista = (op1, op2, op3, op4, op5, texto0, texto1, texto2, texto3, texto4, texto5)
 
     while not selecionou:
-        teclas = JOGO.checkKey()
+        teclas = tecla_menu()
 
         # Seleciona p/ cima
         if teclas in ('Up', 'W', 'w'):
@@ -223,7 +244,7 @@ def menu_dificuldade():
     lista = (op1, op2, op3, op4, texto1, texto2, texto3, texto4, texto5)
 
     while not selecionou:
-        teclas = JOGO.checkKey()
+        teclas = tecla_menu()
 
         # Seleciona p/ cima
         if teclas in ('Up', 'W', 'w'):
@@ -273,7 +294,7 @@ def menu_records():
     lista = (op1, texto1, texto2, texto3, texto4, texto5, texto6, texto7)
 
     while not selecionou:
-        teclas = JOGO.checkKey()
+        teclas = tecla_menu()
 
         # Enter ou esc faz a mesma coisa
         if teclas in ('Return', 'space', 'Escape', 'BackSpace'):
@@ -287,7 +308,7 @@ def menu_records():
 
 # Jogo Principal
 def jogo_principal():
-    global RESOLUCAO, FUNDO, JOGO, ACABOU, PONTOS, PLACAR, LATERAL, DIFICULDADE, _CAIU, _COMECOU, EXTRA
+    global RESOLUCAO, FUNDO, JOGO, ACABOU, PONTOS, PLACAR, LATERAL, DIFICULDADE, _CAIU, _COMECOU, EXTRA, TECLAS_JOGO
 
     # Ativa o 'autoflush' para a manipulação dos quadros
     JOGO.autoflush = True
@@ -345,8 +366,8 @@ def jogo_principal():
 
     # Núcleo do Jogo
     while not ACABOU:
-
-        teclas = JOGO.checkKey()
+        if JOGO.isClosed():
+            exit()
 
         p2x = barra.getP2().getX()
         p1x = barra.getP1().getX()
@@ -354,39 +375,39 @@ def jogo_principal():
         # Barra vai para a direita até o limite da margem
         # 9 = Margem-1 para corrigir quando não bate na parede por conta da velocidade variável
         # To-do (Bug Visual): Dependendo do movimento, fica sobrando ou não 1px
-        if teclas in ('Right', 'D', 'd'):
+        if TECLAS_JOGO in ('Right', 'D', 'd'):
 
             # Cálculo do movimento da barra
             if x > 0:
-                if 5 + x * DIFICULDADE <= RESOLUCAO - 9 - p2x:
-                    barra.move((5 + x * DIFICULDADE) * (RESOLUCAO / 500), 0)
+                if 2 + x * DIFICULDADE <= RESOLUCAO - 9 - p2x:
+                    barra.move((2 + x * DIFICULDADE) * (RESOLUCAO / 500), 0)
                 else:
                     barra.move(RESOLUCAO - 9 - p2x, 0)
             else:
-                if -(-5 + x * DIFICULDADE) <= RESOLUCAO - 9 - p2x:
-                    barra.move(-(RESOLUCAO / 500) * (-5 + x * DIFICULDADE), 0)
+                if -(-2 + x * DIFICULDADE) <= RESOLUCAO - 9 - p2x:
+                    barra.move(-(RESOLUCAO / 500) * (-2 + x * DIFICULDADE), 0)
                 else:
                     barra.move(RESOLUCAO - 9 - p2x, 0)
 
         # Barra vai para a esquerda até o limite da margem
         # 9 = Margem-1 para corrigir quando não bate na parede por conta da velocidade variável
         # To-do (Bug Visual): Dependendo do movimento, fica sobrando ou não 1px
-        elif teclas in ('Left', 'A', 'a'):
+        elif TECLAS_JOGO in ('Left', 'A', 'a'):
 
             # Cálculo do movimento da barra
             if x > 0:
-                if 5 + x * DIFICULDADE <= p1x - 9:
-                    barra.move(-(5 + x * DIFICULDADE) * (RESOLUCAO / 500), 0)
+                if 2 + x * DIFICULDADE <= p1x - 9:
+                    barra.move(-(2 + x * DIFICULDADE) * (RESOLUCAO / 500), 0)
                 else:
                     barra.move((-p1x + 9), 0)
             else:
-                if -(-5 + x * DIFICULDADE) <= p1x - 9:
-                    barra.move((-5 + x * DIFICULDADE) * (RESOLUCAO / 500), 0)
+                if -(-2 + x * DIFICULDADE) <= p1x - 9:
+                    barra.move((-2 + x * DIFICULDADE) * (RESOLUCAO / 500), 0)
                 else:
                     barra.move((-p1x + 9), 0)
 
         # Pausa o Jogo
-        elif teclas in ('Escape', 'BackSpace'):
+        elif TECLAS_JOGO in ('Escape', 'BackSpace'):
             pausar()
 
         # Checa se bateu a cada atualização
@@ -436,7 +457,7 @@ def resultado():
         texto3 = texto_sem_ret(50, 65, False, '[ENTER/ESC] Para continuar', fonte='courier')
 
     while teclas not in ('Return', 'space', 'Escape', 'BackSpace'):
-        teclas = JOGO.checkKey()
+        teclas = tecla_menu()
 
     texto = (texto0, texto1, texto2, texto3)
     limpar(texto)
@@ -472,7 +493,7 @@ def formar_recorde():
 
         while not terminou:
 
-            teclas = JOGO.checkKey()
+            teclas = tecla_menu()
 
             if teclas in ('Down', 'S', 's'):
                 if sel != 51:
@@ -518,7 +539,7 @@ def formar_recorde():
         teclas = None
         texto2 = texto_sem_ret(50, 70, False, '[ENTER/ESC] Para continuar')
         while teclas not in ('Return', 'space', 'Escape', 'BackSpace'):
-            teclas = JOGO.checkKey()
+            teclas = tecla_menu()
 
         lista = (letra, texto1, texto2, texto_primeiro, texto_segundo, texto_terceiro)
         limpar(lista)
@@ -541,7 +562,7 @@ def atualizar_ret(ret, x):
 # Função de Pause
 def pausar():
     # Variáveis necessárias
-    global ACABOU, PONTOS, _COMECOU
+    global ACABOU, PONTOS, _COMECOU, TECLAS_JOGO
     pausa, confirmou = True, False
 
     if not _COMECOU:
@@ -556,7 +577,7 @@ def pausar():
 
     while pausa:
 
-        teclas = JOGO.checkKey()
+        teclas = tecla_menu()
 
         # Retornar ao clicar Enter
         if teclas in ('Return', 'space'):
@@ -597,7 +618,7 @@ def confirmar():
 
     while confirma:
 
-        teclas = JOGO.checkKey()
+        teclas = tecla_menu()
 
         # Retornar ao clicar Enter
         if teclas in ('Return', 'space'):
@@ -933,7 +954,7 @@ def montar_menu():
 
 # Menu Principal
 def menu_principal():
-    global FUNDO, RESOLUCAO, JOGO, MUDOU_RESOLUCAO, EXTRA
+    global FUNDO, RESOLUCAO, JOGO, MUDOU_RESOLUCAO, EXTRA, TECLAS_JOGO
 
     # Variáveis necessárias
     selecionado = 1
@@ -945,10 +966,15 @@ def menu_principal():
     # Salvá-los para quando o usuário retornar ao menu principal, eles serem mostrados novamente
     lista_dos_objetos = op1, op2, op3, op4, op5, texto0, texto1, texto2, texto3, texto4, texto5
 
+    # Fix no atraso das teclas
+    JOGO.bind_all('<KeyPress>', tecla_apertou)
+    JOGO.bind_all('<KeyRelease>', tecla_soltou)
+    TECLAS_JOGO = ''
+
     # Enquanto não selecionar nada, continua no Menu
     while not selecionou:
 
-        teclas = JOGO.checkKey()
+        teclas = tecla_menu()
 
         # Seleciona p/ cima
         if teclas in ('Up', 'W', 'w'):
