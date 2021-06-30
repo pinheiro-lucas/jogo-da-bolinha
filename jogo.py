@@ -1,3 +1,4 @@
+# Utilização da biblioteca Graphics + função randrange() da Random
 from graphics import *
 from random import randrange
 
@@ -106,10 +107,13 @@ def criar_barra(x1, y1, x2, y2):
 
 # Função para Mudar a Resolução
 def mudar_resolucao():
-    global JOGO, RESOLUCAO, FUNDO, MUDOU_RESOLUCAO
+    global JOGO, RESOLUCAO, FUNDO, MUDOU_RESOLUCAO, TECLAS_JOGO
     JOGO.close()
-    JOGO = GraphWin('Menu do Jogo', RESOLUCAO, RESOLUCAO)
+    JOGO = GraphWin('Menu do Jogo', RESOLUCAO, RESOLUCAO, autoflush=False)
     JOGO.setBackground(FUNDO)
+    JOGO.bind_all('<KeyPress>', tecla_apertou)
+    JOGO.bind_all('<KeyRelease>', tecla_soltou)
+    TECLAS_JOGO = ''
     MUDOU_RESOLUCAO = True
 
 
@@ -119,6 +123,7 @@ def limpar(lista):
         _.undraw()
 
 
+# Função para pegar os Records de Sessões antigas
 def records():
     global RECORD, RECORD_EXTRA
     arquivo = 'records.txt'
@@ -138,6 +143,7 @@ def records():
             flag += 1
 
 
+# Salva os Records em records.txt
 def salvar_record():
     global RECORD, RECORD_EXTRA
     arquivo = open('records.txt', mode='w')
@@ -147,17 +153,20 @@ def salvar_record():
         arquivo.write(record[0] + ' ' + str(record[1]) + '\n')
 
 
+# Fix para o Delay da biblioteca Graphics [1/2]
 def tecla_apertou(tecla):
     global TECLAS_JOGO
     TECLAS_JOGO = tecla.keysym
 
 
+# Fix para o Delay da biblioteca Graphics [2/2]
 def tecla_soltou(tecla):
     global TECLAS_JOGO
     if TECLAS_JOGO == tecla.keysym:
         TECLAS_JOGO = ''
 
 
+# Fix ao utilizar o AutoFlush
 def tecla_menu():
     global JOGO, TECLAS_JOGO
     TECLAS_JOGO = ''
@@ -310,9 +319,6 @@ def menu_records():
 def jogo_principal():
     global RESOLUCAO, FUNDO, JOGO, ACABOU, PONTOS, PLACAR, LATERAL, DIFICULDADE, _CAIU, _COMECOU, EXTRA, TECLAS_JOGO
 
-    # Ativa o 'autoflush' para a manipulação dos quadros
-    JOGO.autoflush = True
-
     # Variáveis necessárias
     ACABOU, _CAIU = False, False
     PONTOS = 0
@@ -346,13 +352,6 @@ def jogo_principal():
     else:
         barra = criar_barra(40, 75, 60, 77)
 
-    """
-    TESTE
-    if dificuldade == 1:
-        barra = criar_barra(1, 75, 99, 77)
-        dificuldade = 3
-    """
-
     # Gera o PLACAR
     PLACAR = atualizar_placar()
 
@@ -366,11 +365,14 @@ def jogo_principal():
 
     # Núcleo do Jogo
     while not ACABOU:
+
+        # Checa se a janela foi fechada
         if JOGO.isClosed():
             exit()
 
         p2x = barra.getP2().getX()
         p1x = barra.getP1().getX()
+        velo_barra = RESOLUCAO / 100
 
         # Barra vai para a direita até o limite da margem
         # 9 = Margem-1 para corrigir quando não bate na parede por conta da velocidade variável
@@ -380,12 +382,14 @@ def jogo_principal():
             # Cálculo do movimento da barra
             if x > 0:
                 if 2 + x * DIFICULDADE <= RESOLUCAO - 9 - p2x:
-                    barra.move((2 + x * DIFICULDADE) * (RESOLUCAO / 500), 0)
+                    # barra.move((2 + x * DIFICULDADE) * (RESOLUCAO / 500), 0)
+                    barra.move(velo_barra, 0)
                 else:
                     barra.move(RESOLUCAO - 9 - p2x, 0)
             else:
                 if -(-2 + x * DIFICULDADE) <= RESOLUCAO - 9 - p2x:
-                    barra.move(-(RESOLUCAO / 500) * (-2 + x * DIFICULDADE), 0)
+                    # barra.move(-(RESOLUCAO / 500) * (-2 + x * DIFICULDADE), 0)
+                    barra.move(velo_barra, 0)
                 else:
                     barra.move(RESOLUCAO - 9 - p2x, 0)
 
@@ -397,12 +401,14 @@ def jogo_principal():
             # Cálculo do movimento da barra
             if x > 0:
                 if 2 + x * DIFICULDADE <= p1x - 9:
-                    barra.move(-(2 + x * DIFICULDADE) * (RESOLUCAO / 500), 0)
+                    # barra.move(-(2 + x * DIFICULDADE) * (RESOLUCAO / 500), 0)
+                    barra.move(-velo_barra, 0)
                 else:
                     barra.move((-p1x + 9), 0)
             else:
                 if -(-2 + x * DIFICULDADE) <= p1x - 9:
-                    barra.move((-2 + x * DIFICULDADE) * (RESOLUCAO / 500), 0)
+                    # barra.move((-2 + x * DIFICULDADE) * (RESOLUCAO / 500), 0)
+                    barra.move(-velo_barra, 0)
                 else:
                     barra.move((-p1x + 9), 0)
 
@@ -450,6 +456,7 @@ def resultado():
     texto1 = texto_sem_ret(50, 45, False, f'PONTUAÇÃO FINAL: {PONTOS}', fonte='courier')
     texto2 = texto_sem_ret(50, 55, False, f'DIFICULDADE: {dificuldades_string[DIFICULDADE - 1]}', fonte='courier')
 
+    # Condições para Salvar o Record
     if EXTRA and PONTOS > int(RECORD_EXTRA[DIFICULDADE - 1][1]) \
             or not EXTRA and PONTOS > int(RECORD[DIFICULDADE - 1][1]):
         texto3 = texto_sem_ret(50, 65, False, '[ENTER/ESC] Salvar Recorde', fonte='courier')
@@ -545,12 +552,14 @@ def formar_recorde():
         limpar(lista)
 
 
+# Função para Atualizar a Letra exibida
 def atualizar_letra(letra, alfabeto, sel, x):
     letra.undraw()
     letra = texto_sem_ret(x, 57, True, f'{alfabeto[sel]}', fonte='courier')
     return letra
 
 
+# Função para destacar a posição da letra
 def atualizar_ret(ret, x):
     global BOTOES
     ret.undraw()
@@ -636,35 +645,42 @@ def confirmar():
 
 # Função de criação da Margem
 def margem():
-    global RESOLUCAO, FUNDO, BOTOES
+    global RESOLUCAO
     # Criar um retângulo de margem nas bordas
-    self = Rectangle(Point(1, 1), Point(RESOLUCAO - 1, RESOLUCAO * (80 / 100)))
+    self = retangulo2(1, 1, RESOLUCAO - 1, RESOLUCAO * (80 / 100))
+
+    # Deletar a parte de baixo
+    self2 = retangulo2(0, RESOLUCAO * (80 / 100), RESOLUCAO - 1, RESOLUCAO - 1, fundo=True)
+
+    # Linhas
+    self3 = criar_linha(2, 83, 98, 83)
+    self4 = criar_linha(2, 96, 98, 96)
+
+    return self, self2, self3, self4
+
+
+# Função para criar Linhas (repetição de código)
+def criar_linha(x1, y1, x2, y2):
+    global FUNDO, JOGO, RESOLUCAO
+    self = Line(Point(RESOLUCAO * (x1 / 100), RESOLUCAO * (y1 / 100)),
+                Point(RESOLUCAO * (x2 / 100), RESOLUCAO * (y2 / 100)))
+    self.setOutline(FUNDO)
+    self.setWidth(5)
+    self.setFill(FUNDO)
+    self.draw(JOGO)
+    return self
+
+
+# Função para criar Retângulos específicos (repetição de código)
+def retangulo2(x1, y1, x2, y2, fundo=False):
+    global BOTOES, JOGO
+    self = Rectangle(Point(x1, y1), Point(x2, y2))
+    if fundo:
+        self.setFill(BOTOES)
     self.setOutline(BOTOES)
     self.setWidth(10)
     self.draw(JOGO)
-    # Deletar a parte de baixo
-    self2 = Rectangle(Point(0, RESOLUCAO * (80 / 100)), Point(RESOLUCAO - 1, RESOLUCAO - 1))
-    self2.setOutline(BOTOES)
-    self2.setWidth(10)
-    self2.setFill(BOTOES)
-    self2.draw(JOGO)
-
-    # Linhas
-    self3 = Line(Point(RESOLUCAO * (2 / 100), RESOLUCAO * (83 / 100)),
-                 Point(RESOLUCAO * (98 / 100), RESOLUCAO * (83 / 100)))
-    self3.setOutline(FUNDO)
-    self3.setWidth(5)
-    self3.setFill(FUNDO)
-    self3.draw(JOGO)
-
-    self4 = Line(Point(RESOLUCAO * (2 / 100), RESOLUCAO * (96 / 100)),
-                 Point(RESOLUCAO * (98 / 100), RESOLUCAO * (96 / 100)))
-    self4.setOutline(FUNDO)
-    self4.setWidth(5)
-    self4.setFill(FUNDO)
-    self4.draw(JOGO)
-
-    return self, self2, self3, self4
+    return self
 
 
 # Função para checar se bateu
@@ -903,7 +919,7 @@ def atualizar_placar():
 # Função de Criação dos Cubos
 def cubos():
     global RESOLUCAO, BOTOES, JOGO, FUNDO
-
+    JOGO.autoflush = True
     # Armazena todos os cubos na lista
     lista_cubos = []
     for y in range(2, 14 + 1, 6):
@@ -920,6 +936,7 @@ def cubos():
             lista_cubos.append(self)
             # Animação visual
             time.sleep(0.01)
+    JOGO.autoflush = False
     return lista_cubos
 
 
@@ -928,10 +945,9 @@ def objetos_menu_principal(lista):
         objeto.draw(JOGO)
 
 
+# Função para montar os objetos do Menu Principal
 def montar_menu():
     global JOGO, RESOLUCAO
-    # Desativa o 'autoflush' caso o jogador venha do Jogo
-    JOGO.autoflush = False
 
     img(50, 50, 'fundo.gif')
 
@@ -1000,6 +1016,8 @@ def menu_principal():
             elif selecionado == 5:
                 EXTRA = True
                 selecionou = jogo_principal()
+                # Ao voltar, ele seleciona o primeiro botão do Menu
+                selecionado = 1
                 jogou = True
 
         # ESC
@@ -1028,6 +1046,7 @@ def menu_principal():
 
 # Inicia o Jogo
 try:
+    # Pega os Records de Sessões anteriores e depois executa o jogo
     records()
     menu_principal()
 # Se a aba for fechada, o jogo finaliza
