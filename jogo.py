@@ -1,4 +1,4 @@
-# Utilização da biblioteca Graphics + função randrange() da Random
+# Utilização da biblioteca Graphics + função randrange() & choice() da Random
 from graphics import *
 from random import randrange, choice
 
@@ -802,8 +802,8 @@ def bateu_extra(ball, x, y, lista_cubos):
                             x = -x
                         if len(list_cubos2) == 2:
                             for cubos2 in list_cubos2:
-                                lista_cubos[cubos2].undraw()
-                                lista_cubos.remove(lista_cubos[cubos2])
+                                cubos2.undraw()
+                                lista_cubos.remove(cubos2)
                                 PONTOS += 1
                             atualizar_placar()
                     else:
