@@ -17,3 +17,11 @@ Regras:
 OBS: Podem ser realizadas funções novas e ideias novas ao jogo.
 
 Tempo limite: 30 dias.
+
+Informações sobre a Release:
+- Utilizada a biblioteca 'pyinstaller' para a criação do executável;
+- Utilizado o NSIS para a criação do instalador.
+
+Nota final:
+- Estamos cientes de que não é eficaz a compilação de um arquivo python para um executável, entretanto, fizemos para que os jogadores possam executar o jogo sem instalar nada.
+- O projeto foi descontinuado uma vez que era apenas um trabalho de semestre.
