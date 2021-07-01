@@ -72,13 +72,8 @@ def texto_sem_ret(x, y, t, msg, cor=BOTOES, fonte='times roman'):
 
 
 # Função da Bolinha
-def bola(x, y):
+def bola(x, y, r):
     global JOGO, RESOLUCAO, FUNDO
-    # Fórmula para o raio da circunferência
-    if DIFICULDADE == 3:
-        r = (9 / 500) * RESOLUCAO
-    else:
-        r = RESOLUCAO / 50
     self = Circle(Point(RESOLUCAO * (x / 100), RESOLUCAO * (y / 100)), r-5)  # DEBUG @thiago
     self.setFill(FUNDO)
     self.setOutline(FUNDO)
@@ -329,12 +324,18 @@ def jogo_principal():
            --- Y ---
            1 = Baixo
           -1 = Cima     """
+    # Raio da bolinha
+    r = RESOLUCAO / 50
+
+    # Velocidade da barra
+    velo_barra = RESOLUCAO / 100
+
     # Gera pra onde a bolinha vai (random e para cima)
     x, y = choice([2, -2]), -2
     # Cria a primeira posição da bolinha (random com limites)
     fundo_gramado = img(50, 50, 'gramado.gif')
     x_inicial = randrange(45, 56)
-    bolinha = bola(x_inicial, 72)
+    bolinha = bola(x_inicial, 72, r)
     pngbola = img(x_inicial, 72, 'bola' + str(RESOLUCAO) + '.gif')
     # Cria as barras da margem
     margem1, margem2, linha1, linha2 = margem()
@@ -363,11 +364,6 @@ def jogo_principal():
     # Pressione Enter para iniciar
     pausar()
     _COMECOU = True
-
-    # Raio da bolinha
-    r = RESOLUCAO / 50
-
-    velo_barra = RESOLUCAO / 100
 
     # Núcleo do Jogo
     while not ACABOU:
